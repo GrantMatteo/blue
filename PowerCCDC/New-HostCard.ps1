@@ -1,7 +1,7 @@
 function New-HostCard {
     param (
         [Parameter(Mandatory)]
-        [String] $BoardName,
+        [String] $Board,
         [Parameter(Mandatory)]
         [String] $User,
         [Parameter(Mandatory)]
