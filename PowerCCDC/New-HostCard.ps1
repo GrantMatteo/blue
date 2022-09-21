@@ -5,18 +5,20 @@ function New-HostCard {
         [Parameter(Mandatory)]
         [String] $User,
         [Parameter(Mandatory)]
-        [String] $OS
+        [String] $System
     )
         if($null -eq (Get-TrelloBoard -Name $BoardName)) {
             Write-Host "A board with the name $BoardName does not exist, Invoke-CreateBoard to create a new board" 
         }
         else {
             $hostname = hostname
-            if ($OS -eq 'Linux'){
+            if ($System -eq 'Linux'){
                 $IP = hostname -I
+                $OperatingSystem = cat /etc/os-release  | grep PRETTY_NAME | sed 's/PRETTY_NAME=//' | sed 's/\"//g'
             }
-            elseif ($OS -eq 'Windows') {
+            elseif ($System -eq 'Windows') {
                 $IP = Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress | Where-Object IPAddress -NotLike '127.0.0.1' | Select -ExpandProperty IPAddress
+                $OperatingSystem = (Get-WmiObject -class Win32_OperatingSystem).Caption
             }
             else {
                 Write-Error 'OS needs to be either Windows or Linux'
@@ -24,9 +26,11 @@ function New-HostCard {
             $password = Read-Host "Enter a new password"
             $CardTitle = -join($hostname," (",$ip,") ",'[', $User,"] ") 
             $description = "# System Information:
- ## Operating System:
+## Operating System:
 
- ## Admin User
+$OperatingSystem
+
+## Admin User
 username: $(whoami)
 password: $password
 
