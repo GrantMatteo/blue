@@ -13,10 +13,10 @@ function New-HostCard {
         else {
             $hostname = hostname
             if ($OS -eq 'Linux'){
-                $ip = 'something'
+                $IP = hostname -I
             }
             elseif ($OS -eq 'Windows') {
-                $ip = 'something'
+                $IP = Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress | Where-Object IPAddress -NotLike '127.0.0.1' | Select -ExpandProperty IPAddress
             }
             else {
                 Write-Error 'OS needs to be either Windows or Linux'
