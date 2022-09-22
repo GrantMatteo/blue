@@ -42,24 +42,12 @@ password: $password
                 $users = cat /etc/passwd | grep -vE 'false|nologin|sync' | awk -F ":" '{print $1}'
                 $outbound = netstat -tupwn | grep -E 'tcp|udp' | awk '{print $5,$7}'
                 $inbound = netstat -tulpen | grep -E 'tcp|udp' | awk '{print $4,$9}'
-                foreach ($user in $users){
-                    New-TrelloCardChecklistItem -Checklist $userchecklist -Name $user
-                }
-                if ($null -eq (which systemctl)){
-                    $services = systemctl --type=service  | grep active | awk '{print $1}'
-                }
-                else{
-                    $services = service --status-all | grep -i '+' | awk -F "]  " '{print $2}'
-                }
-                foreach ($service in $services){
-                    New-TrelloCardChecklistItem -Checklist $servicechecklist -Name $service
-                }
-                foreach ($connection in $outbound){
-                    New-TrelloCardChecklistItem -Checklist $outboundchecklist -Name $connection
-                }
-                foreach ($connection in $inbound){
-                    New-TrelloCardChecklistItem -Checklist $inboundchecklist -Name $connection
-                }
+                foreach ($user in $users){New-TrelloCardChecklistItem -Checklist $userchecklist -Name $user}
+                if ($null -eq (which systemctl)){$services = systemctl --type=service  | grep active | awk '{print $1}'}
+                else{$services = service --status-all | grep -i '+' | awk -F "]  " '{print $2}'}
+                foreach ($service in $services){mNew-TrelloCardChecklistItem -Checklist $servicechecklist -Name $service}
+                foreach ($connection in $outbound){New-TrelloCardChecklistItem -Checklist $outboundchecklist -Name $connection}
+                foreach ($connection in $inbound){New-TrelloCardChecklistItem -Checklist $inboundchecklist -Name $connection}
             }
             elseif ($System -eq 'Windows') {
                 $IP = Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress | Where-Object IPAddress -NotLike '127.0.0.1' | Select-Object -ExpandProperty IPAddress
