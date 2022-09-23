@@ -53,19 +53,19 @@ function Invoke-SecureBaseline {
     .\sysmon.exe -accepteula -i sysmonconfig-export.xml
 
 ######### Domain Controller Lockdown #########
-if ($DC) {Add-ADGroupMember -Identity "Protected Users" -Members "Domain Users"}
+    if ($DC) {Add-ADGroupMember -Identity "Protected Users" -Members "Domain Users"}
 
 ######### Constrained Language Mode #########
-[System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
+    [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
 ######### Logging#########
-# Powershell command transcription
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows" -Name "PowerShell"
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell" -Name "Transcription"
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell" -Name "ScriptBlockLogging"
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" -Name "EnableTranscripting" -Value 1
-Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\PowerShell\Transcription" -Name "OutputDirectory" -PropertyType "String" -Value "C:\Windows\debug\timber"
-# Powershell script block logging
-Set-ItemProperty -Path "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Name "EnableScriptBlockLogging" -Value 1
+    # Powershell command transcription
+    New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows" -Name "PowerShell"
+    New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell" -Name "Transcription"
+    New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell" -Name "ScriptBlockLogging"
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" -Name "EnableTranscripting" -Value 1
+    Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\PowerShell\Transcription" -Name "OutputDirectory" -PropertyType "String" -Value "C:\Windows\debug\timber"
+    # Powershell script block logging
+    Set-ItemProperty -Path "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Name "EnableScriptBlockLogging" -Value 1
 
 }
