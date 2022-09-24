@@ -1,4 +1,4 @@
-# Script to be ran ASAP for linux boxes to install dependencies and other basic Linux stuff
+# Script to be ran ASAP for linux boxes to install dependencies
 
 YUM_CMD=$(which yum)
 APT_GET_CMD=$(which apt-get)

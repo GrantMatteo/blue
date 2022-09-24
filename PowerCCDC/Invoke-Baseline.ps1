@@ -10,10 +10,11 @@ function Invoke-Baseline {
     } else{
         if ($System -eq 'Linux'){
             # Linux Baseline Scripts
-
+        
         }
         if ($System -eq 'Windows'){
             # Windows Baseline Scripts
+            
         }
         else{
             Write-Error 'System must be Windows or Linux'
