@@ -19,20 +19,20 @@ function New-HostCard {
 # System Information
 
 ## Operating System:
-[OS]
+OS_PLACEHOLDERh
 
 ## Admin User
 username: $(whoami)
 password: $password
 
 ## Other Details:
-    DNS Servers: [DNS]"
+    DNS Servers: DNS_PLACEHOLDER"
             if ($System -eq 'Linux'){
                 $IP = hostname -I
                 $DNS = cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
                 $OperatingSystem = cat /etc/os-release  | grep PRETTY_NAME | sed 's/PRETTY_NAME=//' | sed 's/\"//g'
-                $description = $description -Replace "[OS]", $OperatingSystem
-                $description = $description -Replace "[DNS]", $DNS
+                $description = $description -Replace "OS_PLACEHOLDER", $OperatingSystem
+                $description = $description -Replace "DNS_PLACEHOLDER", $DNS
                 $CardTitle = $CardTitle -Replace "IP", $IP
                 $BoxCard = New-TrelloCard -ListID (Get-TrelloList -BoardId (Get-TrelloBoard -Name $Board | Select-Object -ExpandProperty id) | Select-Object name,id | Where-Object name -eq Linux | Select-Object -expand id) -Name $CardTitle -Description $description
                 $userchecklist = New-TrelloCardChecklist -Card $BoxCard -Name users
