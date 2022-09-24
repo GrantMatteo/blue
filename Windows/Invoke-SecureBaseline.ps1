@@ -6,6 +6,7 @@ function Invoke-SecureBaseline {
     $IIS = $false
     if (Get-Service -Name W3SVC) {
         $IIS = $true
+        Import-Module WebAdministration
     }
 ######### SMB #########
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force
