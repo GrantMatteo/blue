@@ -3,6 +3,10 @@ function Invoke-SecureBaseline {
     if (Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'") {
         $DC = $true
     }
+    $IIS = $false
+    if (Get-Service -Name W3SVC) {
+        $IIS = $true
+    }
 ######### SMB #########
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force
 
@@ -52,8 +56,19 @@ function Invoke-SecureBaseline {
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml -Outfile sysmonconfig-export.xml
     .\sysmon.exe -accepteula -i sysmonconfig-export.xml
 
-######### Domain Controller Lockdown #########
+######### Service Lockdown #########
     if ($DC) {Add-ADGroupMember -Identity "Protected Users" -Members "Domain Users"}
+
+    if ($IIS) {
+        foreach ($app in (Get-ChildItem IIS:\AppPools)) {
+            Set-ItemProperty -Path "IIS:\AppPools\$($app.name)" -name processModel.identityType -value 4
+        }
+        foreach ($site in (Get-ChildItem IIS:\Sites)) {
+            Set-WebConfigurationProperty -filter /system.webServer/directoryBrowse -name enabled -PSPath $site.PSPath -value False
+            Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -location $site.name -filter "system.webServer/serverRuntime" -name "authenticatedUserOverride" -value "UseAuthenticatedUser"
+            Set-WebConfigurationProperty -pspath $site.PSPath -filter "system.webServer/serverRuntime" -name "authenticatedUserOverride" -value "UseAuthenticatedUser" -ErrorAction SilentlyContinue
+        }
+    }
 
 ######### Constrained Language Mode #########
     [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
