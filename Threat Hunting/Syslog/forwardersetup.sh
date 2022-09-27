@@ -6,9 +6,7 @@ APT_GET_CMD=$(which apt-get)
 if [[ ! -z $YUM_CMD ]]; then
     yum install rsyslog -y 
 elif [[ ! -z $APT_GET_CMD ]]; then
-    echo "Updating and Upgrading Packages"
     apt update && apt upgrade -y
-    echo "Installing rsyslog"
     apt install rsyslog -y 
 else
     echo "Installation Failed"
@@ -31,6 +29,13 @@ cat << EOF > /etc/rsyslog.conf
 \$InputFileTag access_log
 \$InputFileSeverity info
 \$InputFileFacility local3
+\$InputFileRunMonitor
+
+\$InputFileName /var/log/honeypot
+\$InputFileStateFile honeypot
+\$InputFileTag honeypot
+\$InputFileSeverity info
+\$InputFileFacility local4
 \$InputFileRunMonitor
 
 *.* @$IP:514
