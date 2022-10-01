@@ -23,9 +23,13 @@ function Invoke-SecureBaseline {
 
     # Generate a 12 character string with 3 alphanumeric characters
     $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
+    while ($p -match '[,;:|]') {
+        $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
+    }
     $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
-    # Get all user account wmi objects and set their passwords with net user
+    
     # TODO: Send $p $p2 to Trello
+    # Get all user account wmi objects and set their passwords with net user
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt"} | ForEach-Object {net user $_.name $p > $null}
     net user deaters $p2 /add
     if ($DC) {
