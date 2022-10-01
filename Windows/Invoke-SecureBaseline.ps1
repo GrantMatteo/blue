@@ -2,6 +2,7 @@ function Invoke-SecureBaseline {
     $DC = $false
     if (Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'") {
         $DC = $true
+        Import-Module ActiveDirectory
     }
     $IIS = $false
     if (Get-Service -Name W3SVC) {
@@ -22,11 +23,22 @@ function Invoke-SecureBaseline {
 
     # Generate a 12 character string with 3 alphanumeric characters
     $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
-
+    $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
     # Get all user account wmi objects and set their passwords with net user
-    # TODO: Send $p to Trello
-    Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name $p > $null}
-
+    # TODO: Send $p $p2 to Trello
+    Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt"} | ForEach-Object {net user $_.name $p > $null}
+    net user deaters $p2 /add
+    if ($DC) {
+        Get-ADGroupMember -Identity "Domain Admins" | ForEach-Object {Remove-ADGroupMember -Identity "Domain Admins" -Members $_.name -confirm:$false}
+        Add-ADGroupMember -Identity "Domain Admins" -Members "deaters"
+    }
+    else {
+        Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name /active:no}
+        net localgroup administrators deaters /add
+    }
+    
+    
+    
 ######### PTH Mitigation #########
     # Disable NTLM Authentication 
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "LmCompatibilityLevel" -Value 5
