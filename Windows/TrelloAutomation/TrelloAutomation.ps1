@@ -17,7 +17,6 @@ $ListID = Get-TrelloList -BoardId $BoardID | Where-Object name -eq 'Windows' | S
 $CardName = "Hostname [IP]"
 $CardName = $CardName -Replace "Hostname", $Hostname
 $CardName = $CardName -Replace "IP", $IP
-$Card = New-TrelloCard -ListId $ListID -Name $CardName -Description $Description
 
 #Users
 $Users = Get-LocalUser | Select-Object -expand name

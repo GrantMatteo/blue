@@ -9,10 +9,17 @@ function Invoke-SecureBaseline {
         $IIS = $true
         Import-Module WebAdministration
     }
+    
+    $Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select-Object -expand hostname
+    $IP = Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress | Where-Object IPAddress -NotLike '127.0.0.1' | Select-Object -ExpandProperty IPAddress
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Install-Module PowerTrello -Force -Confirm:$false
+
 ######### SMB #########
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force
 
 ######### Reset Policies #########
+    Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse 
     Remove-Item C:\Windows\System32\GroupPolicy* -Recurse -Force
     gpupdate /force
 
@@ -31,6 +38,12 @@ function Invoke-SecureBaseline {
     # TODO: Send $p $p2 to Trello
     # Get all user account wmi objects and set their passwords with net user
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt"} | ForEach-Object {net user $_.name $p > $null}
+    $Board = Get-TrelloBoard -Name "CCDC"
+    $CardName = "Hostname [IP]"
+    $CardName = $CardName -Replace "Hostname", $Hostname
+    $CardName = $CardName -Replace "IP", $IP 
+    $Card = Get-TrelloCard -Card (Get-TrelloCard -Board $Board -Name $CardName)
+    New-TrelloCardComment -Card $Card -Name -Comment "Password: $p"
     net user deaters $p2 /add
     if ($DC) {
         Get-ADGroupMember -Identity "Domain Admins" | ForEach-Object {Remove-ADGroupMember -Identity "Domain Admins" -Members $_.name -confirm:$false}
@@ -39,6 +52,7 @@ function Invoke-SecureBaseline {
     else {
         Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name /active:no}
         net localgroup administrators deaters /add
+        New-TrelloCardComment -Card $Card -Name -Comment "deaters: $p2"
     }
     
     
@@ -64,6 +78,13 @@ function Invoke-SecureBaseline {
 
 ######### Disable PHP Functions #########
 
+    $ConfigString = "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,
+    curl_multi_exec,parse_ini_file,show_source
+    file_uploads=off"
+
+    $file = Get-ChildItem C:\ php.ini -recurse | Foreach-Object {$_.fullname}
+
+    Add-Content $file $ConfigString
 
 ######### User Rights Assignment #########
 
@@ -87,9 +108,6 @@ function Invoke-SecureBaseline {
         }
     }
 
-######### Constrained Language Mode #########
-    [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
-
 ######### Logging#########
     # Powershell command transcription
     New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows" -Name "PowerShell"
@@ -101,3 +119,6 @@ function Invoke-SecureBaseline {
     Set-ItemProperty -Path "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Name "EnableScriptBlockLogging" -Value 1
 
 }
+
+######### Constrained Language Mode #########
+[System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
