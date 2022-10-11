@@ -95,7 +95,18 @@ function Invoke-SecureBaseline {
     .\sysmon.exe -accepteula -i sysmonconfig-export.xml
 
 ######### Service Lockdown #########
-    if ($DC) {Add-ADGroupMember -Identity "Protected Users" -Members "Domain Users"}
+    if ($DC) {
+        Add-ADGroupMember -Identity "Protected Users" -Members "Domain Users"
+        # CVE-2020-1472 (Zerologon)
+        reg add "HKLM\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v FullSecureChannelProtection /t REG_DWORD /d 1 /f
+        Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" -Name "vulnerablechannelallowlist" -Force
+        # CVE-2021-42278 & CVE-2021-42287 (noPac)
+        Set-ADDomain -Identity $Domain -Replace @{"ms-DS-MachineAccountQuota"="0"}
+        # Domain controller: LDAP server signing requirements
+        reg add "HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v LDAPServerIntegrity /t REG_DWORD /d 2 /f
+        # Domain controller: LDAP server channel binding token requirements (1 for 2008 and before)
+        reg add "HKLM\System\CurrentControlSet\Services\NTDS\Parameters" /v LdapEnforceChannelBinding /t REG_DWORD /d 2 /f
+    }
 
     if ($IIS) {
         foreach ($app in (Get-ChildItem IIS:\AppPools)) {
@@ -107,7 +118,14 @@ function Invoke-SecureBaseline {
             Set-WebConfigurationProperty -pspath $site.PSPath -filter "system.webServer/serverRuntime" -name "authenticatedUserOverride" -value "UseAuthenticatedUser" -ErrorAction SilentlyContinue
         }
     }
+    Stop-Service -Name Spooler -Force
+    Set-Service -Name Spooler -StartupType Disabled
 
+######### Misc #########
+    # CVE-2021-34527 (PrintNightmare)
+    reg add "HKLM\Software\Policies\Microsoft\Windows NT\Printers" /v RegisterSpoolerRemoteRpcEndPoint /t REG_DWORD /d 2 /f
+    # Network security: LDAP client signing requirements
+    reg add "HKLM\SYSTEM\CurrentControlSet\Services\LDAP" /v LDAPClientIntegrity /t REG_DWORD /d 2 /f
 ######### Logging#########
     # Powershell command transcription
     New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows" -Name "PowerShell"
