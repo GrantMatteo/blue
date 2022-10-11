@@ -30,10 +30,13 @@ function Invoke-SecureBaseline {
 
     # Generate a 12 character string with 3 alphanumeric characters
     $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
-    while ($p -match '[,;:|]') {
+    while ($p -match '[,;:|iIlLoO0]') {
         $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
     }
     $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
+    while ($p2 -match '[,;:|iIlLoO0]') {
+        $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
+    }
     
     # TODO: Send $p $p2 to Trello
     # Get all user account wmi objects and set their passwords with net user
