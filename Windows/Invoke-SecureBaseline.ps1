@@ -38,8 +38,6 @@ function Invoke-SecureBaseline {
         $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
     }
     
-    # TODO: Send $p $p2 to Trello
-    # Get all user account wmi objects and set their passwords with net user
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt"} | ForEach-Object {net user $_.name $p > $null}
     $Board = Get-TrelloBoard -Name "CCDC"
     $CardName = "Hostname [IP]"
@@ -48,20 +46,20 @@ function Invoke-SecureBaseline {
     $Card = Get-TrelloCard -Card (Get-TrelloCard -Board $Board -Name $CardName)
     New-TrelloCardComment -Card $Card -Name -Comment "Password: $p"
     net user deaters $p2 /add
+    New-TrelloCardComment -Card $Card -Name -Comment "deaters: $p2"
     if ($DC) {
         Get-ADGroupMember -Identity "Domain Admins" | ForEach-Object {Remove-ADGroupMember -Identity "Domain Admins" -Members $_.name -confirm:$false}
         Add-ADGroupMember -Identity "Domain Admins" -Members "deaters"
     }
     else {
-        Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name /active:no}
+        Get-WmiObject -class win32_useraccount | ForEach-Object {net localgroup administrators $_.name /delete}
         net localgroup administrators deaters /add
-        New-TrelloCardComment -Card $Card -Name -Comment "deaters: $p2"
     }
     
     
     
 ######### PTH Mitigation #########
-    # Disable NTLM Authentication 
+    # Disable NTLM 
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "LmCompatibilityLevel" -Value 5
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "NoLmHash" -Value 1
     # Deny all NTLM authentication in the domain
