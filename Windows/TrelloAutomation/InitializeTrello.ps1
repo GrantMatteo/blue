@@ -45,5 +45,5 @@ Invoke-Command $WinRMable -ScriptBlock {
     Install-Module PowerTrello -Scope AllUsers -Confirm:$false -Force
     Set-TrelloConfiguration -ApiKey $Using:TrelloAPI -AccessToken $Using:TrelloAccessToken -ErrorAction SilentlyContinue
     Sleep 15
-    . "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
+    New-HostCard -BoardID $Using:BoardID -System 'Windows' -User 'Tanay'
 }

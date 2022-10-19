@@ -25,5 +25,7 @@ function Invoke-CreateBoard {
     $BoxTemplateCard = New-TrelloCard -ListId $IncomingTicketsList -Name 'Box Template [DO NOT TOUCH]'
     New-TrelloCardChecklist -Card $BoxTemplateCard -Name Baselining -Item @('Inventory', 'Change Default Passwords', 'Configure Log Forwarding')
 
+    return $BoardID
+
     }
 }
