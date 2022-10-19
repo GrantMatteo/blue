@@ -1,4 +1,6 @@
 function Invoke-SecureBaseline {
+    $Error.Clear()
+    $ErrorActionPreference = "SilentlyContinue"
     $DC = $false
     if (Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'") {
         $DC = $true
@@ -81,6 +83,7 @@ function Invoke-SecureBaseline {
     # Enable LSASSS process auditing
     New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options" -Name "LSASS.exe"
     Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe" -Name "AuditLevel" -Value 8
+######### Defender #########
 
 ######### Disable PHP Functions #########
 
@@ -132,6 +135,7 @@ function Invoke-SecureBaseline {
     reg add "HKLM\Software\Policies\Microsoft\Windows NT\Printers" /v RegisterSpoolerRemoteRpcEndPoint /t REG_DWORD /d 2 /f
     # Network security: LDAP client signing requirements
     reg add "HKLM\SYSTEM\CurrentControlSet\Services\LDAP" /v LDAPClientIntegrity /t REG_DWORD /d 2 /f
+    reg add "HKCU\Software\Policies\Microsoft\Windows\System" /v DisableCMD /t REG_DWORD /d 1 /f
 ######### Logging#########
     # Powershell command transcription
     New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows" -Name "PowerShell"
@@ -141,8 +145,10 @@ function Invoke-SecureBaseline {
     Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\PowerShell\Transcription" -Name "OutputDirectory" -PropertyType "String" -Value "C:\Windows\debug\timber"
     # Powershell script block logging
     Set-ItemProperty -Path "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Name "EnableScriptBlockLogging" -Value 1
-
 }
 
 ######### Constrained Language Mode #########
 [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
+
+
+$Error | Out-File $HOME\Documents\isb.txt -Append -Encoding utf8
