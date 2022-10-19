@@ -48,7 +48,12 @@ function Invoke-SecureBaseline {
     net user deaters $p2 /add
     New-TrelloCardComment -Card $Card -Name -Comment "deaters: $p2"
     if ($DC) {
-        Get-ADGroupMember -Identity "Domain Admins" | ForEach-Object {Remove-ADGroupMember -Identity "Domain Admins" -Members $_.name -confirm:$false}
+        $SchemaAdmin = (Get-ADGroupMember -Identity "Domain Admins").name
+        Get-ADGroupMember -Identity "Domain Admins" | ForEach-Object {
+            if ($SchemaAdmin -notcontains $_.name) {
+                Remove-ADGroupMember -Identity "Domain Admins" -Members $_.name -confirm:$false
+            }
+        }
         Add-ADGroupMember -Identity "Domain Admins" -Members "deaters"
     }
     else {
