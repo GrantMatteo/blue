@@ -86,14 +86,21 @@ function Invoke-SecureBaseline {
 ######### Defender #########
 
 ######### Disable PHP Functions #########
-
+    $php = Get-ChildItem C:\ php.exe -recurse -ErrorAction SilentlyContinue | ForEach-Object {& $_.FullName --ini | Out-String}
+    $ConfigFiles
+    ForEach($OutputLine in $($php -split "`r`n")) {
+        if ($OutputLine -match 'Loaded') {
+            ForEach-Object {
+                $ConfigFiles = $ConfigFiles + ($OutputLine -split "\s{9}")[1]
+            }
+        }
+    }
     $ConfigString = "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,
     curl_multi_exec,parse_ini_file,show_source
     file_uploads=off"
-
-    $file = Get-ChildItem C:\ php.ini -recurse | Foreach-Object {$_.fullname}
-
-    Add-Content $file $ConfigString
+    Foreach ($ConfigFile in $ConfigFiles) {
+        Add-Content $ConfigFile $ConfigString
+    }
 
 ######### User Rights Assignment #########
 
