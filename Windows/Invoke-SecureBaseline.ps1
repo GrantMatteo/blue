@@ -164,12 +164,13 @@ function Invoke-SecureBaseline {
             Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" -Name "vulnerablechannelallowlist" -Force
             # CVE-2021-42278 & CVE-2021-42287 (noPac)
             Set-ADDomain -Identity $Domain -Replace @{"ms-DS-MachineAccountQuota"="0"}
+            # TODO: Domain Member: Digitally encrypt or sign secure channel data (always) - Enabled works 2008
             if ($2008r2) {
                 # Domain controller: LDAP server signing requirements
                 reg add "HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v LDAPServerIntegrity /t REG_DWORD /d 2 /f
                 # Domain controller: LDAP server channel binding token requirements (1 for 2008 and before)
                 # TODO: Test below for 2008r2 
-                reg add "HKLM\System\CurrentControlSet\Services\NTDS\Parameters" /v LdapEnforceChannelBinding /t REG_DWORD /d 1 /f
+                reg add "HKLM\System\CurrentControlSet\Services\NTDS\Parameters" /v LdapEnforceChannelBinding /t REG_DWORD /d 2 /f
             }
             elseif ($oldaf) {
                 # Domain controller: LDAP server signing requirements
