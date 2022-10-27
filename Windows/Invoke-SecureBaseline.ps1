@@ -173,7 +173,7 @@ function Invoke-SecureBaseline {
             }
             elseif ($oldaf) {
                 # Domain controller: LDAP server signing requirements
-                reg add "HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v LDAPServerIntegrity /t REG_DWORD /d 1/f
+                reg add "HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v LDAPServerIntegrity /t REG_DWORD /d 1 /f
                 # Domain controller: LDAP server channel binding token requirements (1 for 2008 and before)
                 reg add "HKLM\System\CurrentControlSet\Services\NTDS\Parameters" /v LdapEnforceChannelBinding /t REG_DWORD /d 1 /f
             }
