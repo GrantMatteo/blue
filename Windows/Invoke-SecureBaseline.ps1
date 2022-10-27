@@ -120,6 +120,21 @@ Add-MpPreference -AttackSurfaceReductionRules_Ids 26190899-1602-49E8-8B27-EB1D0A
 Add-MpPreference -AttackSurfaceReductionRules_Ids 7674BA52-37EB-4A4F-A9A1-F0F9A1619A2C -AttackSurfaceReductionRules_Actions Enabled
 # Block persistence through WMI event subscription
 Add-MpPreference -AttackSurfaceReductionRules_Ids E6DB77E5-3DF2-4CF1-B95A-636979351E5B -AttackSurfaceReductionRules_Actions Enabled
+ForEach ($ExcludedExt in (Get-MpPreference).ExclusionExtension) {
+    Remove-MpPreference -ExclusionExtension $ExcludedExt
+}
+ForEach ($ExcludedIp in (Get-MpPreference).ExclusionIpAddress) {
+    Remove-MpPreference -ExclusionIpAddress $ExcludedIp
+}
+ForEach ($ExcludedDir in (Get-MpPreference).ExclusionPath) {
+    Remove-MpPreference -ExclusionPath $ExcludedDir
+}
+ForEach ($ExcludedProc in (Get-MpPreference).ExclusionProcess) {
+    Remove-MpPreference -ExclusionProcess $ExcludedProc
+}
+ForEach ($ExcludedASR in (Get-MpPreference).AttackSurfaceReductionOnlyExclusions) {
+    Remove-MpPreference -AttackSurfaceReductionOnlyExclusions $ExcludedASR
+}
 ######### Disable PHP Functions #########
 $php = Get-ChildItem C:\ php.exe -recurse -ErrorAction SilentlyContinue | ForEach-Object {& $_.FullName --ini | Out-String}
 $ConfigFiles
