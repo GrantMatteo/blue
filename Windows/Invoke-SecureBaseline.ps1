@@ -1,10 +1,10 @@
 function Invoke-SecureBaseline {
 
-    Param([switch]$pre2008)
+    Param([switch]$oldaf)
     Param([switch]$2008r2)
 
     $OS = (Get-WMIObject win32_operatingsystem).caption
-    if ($OS -notmatch "Vista|vista|2008|2003|XP|xp") {
+    if ($OS -notmatch "ista|2008|2003|XP|xp|Xp|7") {
         $Error.Clear()
         $ErrorActionPreference = "SilentlyContinue"
         $DC = $false
@@ -71,6 +71,7 @@ function Invoke-SecureBaseline {
 
         ######### PTH Mitigation #########
         # Disable NTLM 
+        # TODO: DOn't disable dor 2008r2
         Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "LmCompatibilityLevel" -Value 5
         Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "NoLmHash" -Value 1
         if (!$oldaf -or $2008r2) {
