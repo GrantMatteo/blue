@@ -9,7 +9,6 @@ $template Event_Log, "/var/log/remote/event_log" \n\
 $template Honeypot, "/var/log/honeypot" \n\ 
 local1.* ?Auth_Log \n\
 local2.* ?Access_Log \n\
-local3.* ?Event_Log \n\
-local4.* ?Honeypot' > /etc/rsyslog.conf
+local3.* ?Honeypot' > /etc/rsyslog.conf
 
 ENTRYPOINT [ "rsyslogd", "-n" ]
