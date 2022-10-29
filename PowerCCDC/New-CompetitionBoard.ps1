@@ -1,4 +1,4 @@
-function Invoke-CreateBoard {
+function New-CompetitionBoard {
     param (
         [Parameter(Mandatory)]
         [String] $Board
