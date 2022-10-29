@@ -6,14 +6,12 @@ APT_GET_CMD=$(which apt-get)
 if [[ ! -z $YUM_CMD ]]; then
     yum install rsyslog -y 
 elif [[ ! -z $APT_GET_CMD ]]; then
-    apt update && apt upgrade -y
+    apt update
     apt install rsyslog -y 
 else
     echo "Installation Failed"
     exit 1;
 fi
-
-read -p "IP to forward to: " IP
 
 cat << EOF > /etc/rsyslog.conf
 \$ModLoad imfile 
