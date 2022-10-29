@@ -4,11 +4,11 @@ $PortTable = @{}
 
 $PortToApp | ForEach-Object {$PortTable.Add($_.LocalPort, $_.ProcessName)}
 
-Get-NetFirewallRule | Remove-NetFirewallRule
+Get-NetFirewallRule -Direction Inbound | Remove-NetFirewallRule
 
 Set-NetFirewallProfile -All -LogBlocked True -LogMaxSizeKilobytes 16384 -LogAllowed False -LogFileName "%systemroot%\System32\LogFiles\Firewall\pfirewall.log"
 
-Set-NetFirewallProfile -All -DefaultInboundAction Block -DefaultOutboundAction Block -Enabled True
+Set-NetFirewallProfile -All -DefaultInboundAction Block -DefaultOutboundAction Allow  -Enabled True
 
 netsh a s a state off
 
@@ -29,3 +29,6 @@ $SocketsIn | ForEach-Object {
         $Program = $_.split(":")[1];
         New-NetFirewallRule -DisplayName "$_" -Name "$_" -Program ($PortTable.GetEnumerator() | Where-Object key -eq $Program | Select-Object -expand Value) -Direction Inbound -Action Allow -LocalPort $_.split(":")[1] -Protocol TCP -Enabled True -Profile Any}
 }
+
+New-NetFirewallRule -DisplayName "RDP" -Name "RDP" -Direction Inbound -Action Allow -LocalPort 3389 -Protocol TCP -Enabled True -Profile Any
+New-NetFirewallRule -DisplayName "SSH" -Name "SSH" -Direction Inbound -Action Allow -LocalPort 22 -Protocol TCP -Enabled True -Profile Any
