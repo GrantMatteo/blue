@@ -69,6 +69,7 @@ function Invoke-SecureBaseline {
             net localgroup administrators deaters /add
         }
 
+        # TODO: PasswordNotRequired $false
         ######### PTH Mitigation #########
 
         # Disable storage of the LM hash for passwords less than 15 characters
