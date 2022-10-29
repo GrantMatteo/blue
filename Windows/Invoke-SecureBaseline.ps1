@@ -70,11 +70,15 @@ function Invoke-SecureBaseline {
         }
 
         ######### PTH Mitigation #########
-        # Disable NTLM 
-        # TODO: DOn't disable dor 2008r2
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "LmCompatibilityLevel" -Value 5
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "NoLmHash" -Value 1
-        if (!$oldaf -or $2008r2) {
+
+        # Disable storage of the LM hash for passwords less than 15 characters
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v NoLmHash /t REG_DWORD /d 1 /f
+        # Network security: LAN Manager authentication level
+        # Do not send LM or NTLM responses, only NTLMv2
+        # https://learn.microsoft.com/en-us/troubleshoot/windows-client/windows-security/enable-ntlm-2-authentication
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LmCompatibilityLevel /t REG_DWORD /d 5 /f
+        
+        if (!$oldaf -and !$2008r2) {
             # Deny all NTLM authentication in the domain
             Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" -Name "RestrictNTLMInDomain" -Value 7
             # Deny all inbound and outbound NTLM + audit attempts
@@ -198,8 +202,8 @@ function Invoke-SecureBaseline {
                 Set-WebConfigurationProperty -pspath $site.PSPath -filter "system.webServer/serverRuntime" -name "authenticatedUserOverride" -value "UseAuthenticatedUser" -ErrorAction SilentlyContinue
             }
         }
-        Stop-Service -Name Spooler -Force
-        Set-Service -Name Spooler -StartupType Disabled
+        net stop spooler
+        sc config spooler start=disabled
 
         ######### Misc #########
         # CVE-2021-34527 (PrintNightmare)
@@ -214,16 +218,13 @@ function Invoke-SecureBaseline {
         # Powershell script block logging
         reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
 
-
         ######### Constrained Language Mode #########
         [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
         ######### Sysmon Setup #########
-        Set-Location $HOME\Downloads
-        Invoke-WebRequest -Uri https://live.sysinternals.com/Sysmon64.exe -Outfile Sysmon.exe
-        Invoke-WebRequest -Uri https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml -Outfile sysmonconfig-export.xml
+        (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon64.exe',"$Home\Downloads\Sysmon.exe")
+        (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"$Home\Downloads\sysmonconfig-export.xml")
         .\sysmon.exe -accepteula -i sysmonconfig-export.xml
-
         $Error | Out-File $HOME\Documents\isb.txt -Append -Encoding utf8
     }
     else {
