@@ -204,7 +204,7 @@ function Invoke-SecureBaseline {
             }
         }
         net stop spooler
-        sc config spooler start=disabled
+        sc.exe config spooler start=disabled
 
         ######### Misc #########
         # CVE-2021-34527 (PrintNightmare)
