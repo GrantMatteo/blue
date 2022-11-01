@@ -25,7 +25,7 @@ function Invoke-SecureBaseline {
 
         ######### SMB #########
         Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force
-
+        # TODO: SMB Signing
         ######### Reset Policies #########
         Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse 
         Remove-Item C:\Windows\System32\GroupPolicy* -Recurse -Force
