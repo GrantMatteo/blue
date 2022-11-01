@@ -153,8 +153,7 @@ function Invoke-SecureBaseline {
                 }
             }
         }
-        $ConfigString = "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,
-        curl_multi_exec,parse_ini_file,show_source
+        $ConfigString = "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source
         file_uploads=off"
         Foreach ($ConfigFile in $ConfigFiles) {
             Add-Content $ConfigFile $ConfigString
