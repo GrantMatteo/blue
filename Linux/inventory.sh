@@ -1,5 +1,4 @@
 #!/bin/sh
-DEFAULT_PASS=$1
 ncolors=$(tput -T tmux-256color colors)
 #if [ "$ncolors" -ge 8 ]; then
  #   ORAG='\033[0;33m'
