@@ -18,7 +18,7 @@ $ipt -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 $ipt -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 
 # Allow scored services in
-$ipt -A INPUT -p tcp -m multiport --dport $PORTS -m conntrack --ctstate NEW -j ACCEPT
+$ipt -A INPUT -p tcp -m multiport --dport 22,$PORTS -m conntrack --ctstate NEW -j ACCEPT
 
 # Allow incoming connections to dependencies we host for other machines
 $ipt -A INPUT -p tcp -m multiport --dports $LOCALPORTS -s 127.0.0.1,$LOCALNETWORK -m conntrack --ctstate NEW -j ACCEPT
