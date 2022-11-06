@@ -176,16 +176,19 @@ func connect(i instance) (*ssh.Session, error) {
 	} else {
 		// Create sesssion
 		sess, err := client.NewSession()
+		
 		if err != nil {
 			Info("Session creation failed :(")
 		} else {
 			return sess, nil
 		}
 	}
+
 	return nil, nil
 }
 
 func ssher(i instance, sess *ssh.Session, scriptChan chan string, exitChan chan bool, wg *sync.WaitGroup) {
+	//noodle
 	defer func() {
 		exitChan <- true
 	}()
@@ -203,22 +206,23 @@ func ssher(i instance, sess *ssh.Session, scriptChan chan string, exitChan chan 
 	var stderrBytes bytes.Buffer
 	sess.Stdout = &stdoutBytes
 	sess.Stderr = &stderrBytes
-
 	var stdoutOffset int
 	var stderrOffset int
 
 	// Start remote shell
+	
 	err = sess.Shell()
 	if err != nil {
 		Err(err)
 		return
 	}
+	
 
 	index := 1
 	escalated := false
 
 	InfoExtra(i, "Interactive shell on", i.IP)
-
+	
 	if !*noValidate {
 		if !validateShell(i, stdin, &stdoutBytes, stdoutOffset) {
 			Crit(i, "Shell did not respond (to echo) before timeout!")
@@ -227,7 +231,7 @@ func ssher(i instance, sess *ssh.Session, scriptChan chan string, exitChan chan 
 			DebugExtra(i, "Shell appears to be valid (echoes back successfully).")
 		}
 	}
-
+	
 	stdoutOffset = stdoutBytes.Len()
 	stderrOffset = stderrBytes.Len()
 
@@ -258,16 +262,34 @@ func ssher(i instance, sess *ssh.Session, scriptChan chan string, exitChan chan 
 			// Password: prompt should be stderr even if no error is printed in time
 			if stderrBytes.Len()-stderrOffset == 0 {
 				InfoExtra(i, "Password-less sudo permitted, escalated to root.")
-			} else {
+			} else { //yoinky sploinky
 				stderrOffset = stderrBytes.Len()
-				fmt.Fprintf(stdin, "sudo -i\n%s\n", i.Password)
-				time.Sleep(4 * time.Second)
-				if stderrBytes.Len()-stderrOffset > 0 {
+				//fmt.Fprintf(stdin, "sudo -S su\n%s\n", i.Password)
+				fmt.Fprintf(stdin, "sudo -Si \n%s\n", i.Password)
+				//Compare stdout to check if i am root
+				origStdOut := stdoutBytes
+				fmt.Fprintf(stdin, "whoami\n")
+				time.Sleep(2 * time.Second)
+                                /*
+				fmt.Printf("Orig -> %s\n", origStdOut.String())
+                                fmt.Printf("Orig Length is -> %d\n", origStdOut.Len())
+                                fmt.Printf("Current -> %s\n", stdoutBytes.String())
+                                fmt.Printf("Current Length is -> %d\n", stdoutBytes.Len())
+				*/
+				difference := strings.Replace(stdoutBytes.String(), origStdOut.String(), "", -1)
+				difference = strings.Replace(difference, "\n", "", -1)
+				/*
+				fmt.Printf("Difference -> %s \n", difference)
+				fmt.Printf("Difference Length -> %d\n", len(difference))
+				*/
+				if difference != "root" {
 					Stdout(i, strings.TrimSpace(stdoutBytes.String()))
 					Stderr(i, strings.TrimSpace(stderrBytes.String()))
 					Crit(i, "Failed to escalate from", i.Username, "to root (via sudo) on", i.IP)
+					fmt.Printf("Error was: %s", stderrBytes.String())
 					return
 				}
+
 				InfoExtra(i, "Successfully elevated to root (via sudo).")
 			}
 		}
