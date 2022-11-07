@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  metasploit:
+    image: ubuntu
+    hostname: msf
+    restart: always
+    container_name: metasploit
+    volumes:
+      - "./:/opt/ccdc"
+
+
