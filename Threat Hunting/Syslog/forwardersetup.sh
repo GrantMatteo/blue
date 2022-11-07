@@ -64,7 +64,7 @@ cat << EOF > /etc/rsyslog.conf
 \$InputFileFacility local3
 \$InputFileRunMonitor
 
-# MySQL logging (thepot.sh)
+# MySQL logging
 \$InputFileName /var/log/mysql/mysql.log
 \$InputFileStateFile database
 \$InputFileTag database
