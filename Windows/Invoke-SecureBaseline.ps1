@@ -24,7 +24,7 @@ function Invoke-SecureBaseline {
         Install-Module PowerTrello -Force -Confirm:$false
 
         ######### SMB #########
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force
+        reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" /v SMB1 /t REG_DWORD /d 0 /f
         # TODO: SMB Signing
         ######### Reset Policies #########
         Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse 
@@ -81,20 +81,19 @@ function Invoke-SecureBaseline {
         
         if (!$oldaf -and !$2008r2) {
             # Deny all NTLM authentication in the domain
-            Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" -Name "RestrictNTLMInDomain" -Value 7
+            reg add "HKLM\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v RestrictNTLMInDomain /t REG_DWORD /d 7 /f
             # Deny all inbound and outbound NTLM + audit attempts
-            Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0" -Name "RestrictSendingNTLMTraffic" -Value 2
-            Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0" -Name "RestrictReceivingNTLMTraffic" -Value 2
+            reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" /v "RestrictSendingNTLMTraffic" /t REG_DWORD /d 2 /f
+            reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" /v "RestrictReceivingNTLMTraffic" /t REG_DWORD /d 2 /f
         }
         # Disable storage of plaintext creds in WDigest
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" -Name "UseLogonCredential" -Value 0
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" /v UseLogonCredential /t REG_DWORD /d 0 /f
         # Enable remote UAC for Local accounts
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "LocalAccountTokenFilterPolicy" -Value 0
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f
         # Enable LSASS Protection
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "RunAsPPL" -Value 1
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 1 /f
         # Enable LSASSS process auditing
-        New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options" -Name "LSASS.exe"
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe" -Name "AuditLevel" -Value 8
+        reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe" /v AuditLevel /t REG_DWORD /d 8 /f
         ######### Defender #########
         #TODO: Hardcode all defender defaults
 
@@ -194,6 +193,7 @@ function Invoke-SecureBaseline {
 
         if ($IIS) {
             foreach ($app in (Get-ChildItem IIS:\AppPools)) {
+                # TODO: Change to appcmd
                 Set-ItemProperty -Path "IIS:\AppPools\$($app.name)" -name processModel.identityType -value 4
             }
             foreach ($site in (Get-ChildItem IIS:\Sites)) {
@@ -222,7 +222,7 @@ function Invoke-SecureBaseline {
         [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
         ######### Sysmon Setup #########
-        (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon64.exe',"$Home\Downloads\Sysmon.exe")
+        (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',"$Home\Downloads\Sysmon.exe")
         (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"$Home\Downloads\sysmonconfig-export.xml")
         .\sysmon.exe -accepteula -i sysmonconfig-export.xml
         $Error | Out-File $HOME\Documents\isb.txt -Append -Encoding utf8
