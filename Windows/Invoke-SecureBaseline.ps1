@@ -159,8 +159,9 @@ function Invoke-SecureBaseline {
         }
 
         ######### User Rights Assignment #########
-
+        # TODO import file
         ######### Service Lockdown #########
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-TCP" /v UserAuthentication /t REG_DWORD /d 1 /f
         if ($DC) {
             Add-ADGroupMember -Identity "Protected Users" -Members "Domain Users"
             # CVE-2020-1472 (Zerologon)
