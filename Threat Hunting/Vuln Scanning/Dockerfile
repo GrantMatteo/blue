@@ -16,6 +16,4 @@ RUN curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/conf
 
 RUN adduser ccdc
 
-RUN sudo -u ccdc msfdb init 
-
 ENTRYPOINT [ "bash" ]
