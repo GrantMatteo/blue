@@ -25,7 +25,16 @@ function Invoke-SecureBaseline {
 
         ######### SMB #########
         reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" /v SMB1 /t REG_DWORD /d 0 /f
-        # TODO: SMB Signing
+        reg add "HKLM\System\CurrentControlSet\Services\LanManWorkstation\Parameters" /v RequireSecuritySignature /t REG_DWORD /d 1 /f
+        reg add "HKLM\System\CurrentControlSet\Services\LanManWorkstation\Parameters" /v EnableSecuritySignature /t REG_DWORD /d 1 /f
+        reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v RequireSecuritySignature /t REG_DWORD /d 1 /f
+        reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v EnableSecuritySignature /t REG_DWORD /d 1 /f
+        net share C$ /delete
+        if (!$DC) {
+            # TODO: see if this automatically removes shares
+            reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoShareServer /t REG_DWORD /d 0 /f
+            reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoShareWks /t REG_DWORD /d 0 /f
+        }
         ######### Reset Policies #########
         Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse 
         Remove-Item C:\Windows\System32\GroupPolicy* -Recurse -Force
@@ -71,7 +80,6 @@ function Invoke-SecureBaseline {
 
         # TODO: PasswordNotRequired $false
         ######### PTH Mitigation #########
-
         # Disable storage of the LM hash for passwords less than 15 characters
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v NoLmHash /t REG_DWORD /d 1 /f
         # Network security: LAN Manager authentication level
@@ -97,6 +105,9 @@ function Invoke-SecureBaseline {
         ######### Defender #########
         #TODO: Hardcode all defender defaults
 
+        reg add "HKLM\Software\Policies\Microsoft\Windows Defender\Spynet" /v SpyNetReporting /t REG_DWORD /d 1 /f
+        reg add "HKLM\Software\Policies\Microsoft\Windows Defender\Spynet" /v SubmitSamplesConsent /t REG_DWORD /d 1 /f
+        reg add "HKLM\Software\Policies\Microsoft\Windows Defender\MpEngine" /v MpCloudBlockLevel /t REG_DWORD /d 6 /f
         # Block Office applications from injecting code into other processes
         Add-MpPreference -AttackSurfaceReductionRules_Ids 75668C1F-73B5-4CF0-BB93-3ECF5CB7CC84 -AttackSurfaceReductionRules_Actions Enabled
         # Block Office applications from creating executable content
@@ -160,6 +171,8 @@ function Invoke-SecureBaseline {
 
         ######### User Rights Assignment #########
         # TODO import file
+        (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/cpp-cyber/blue/main/Windows/stigs.inf',"$Home\Downloads\stigs.inf")
+        Write-Output Y | Secedit /configure /db secedit.sdb /cfg "$Home\Downloads\stigs.inf" /overwrite
         ######### Service Lockdown #########
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-TCP" /v UserAuthentication /t REG_DWORD /d 1 /f
         if ($DC) {
@@ -221,6 +234,24 @@ function Invoke-SecureBaseline {
         # Disable BITS transfers
         reg add "HKLM\Software\Policies\Microsoft\Windows\BITS" /v EnableBITSMaxBandwidth /t REG_DWORD /d 0 /f
         reg add "HKLM\Software\Policies\Microsoft\Windows\BITS" /v MaxDownloadTime /t REG_DWORD /d 1 /f
+        # UAC
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableLUA /t REG_DWORD /d 1 /f
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 2 /f
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorUser /t REG_DWORD /d 0 /f
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v PromptOnSecureDesktop /t REG_DWORD /d 1 /f
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableInstallerDetection /t REG_DWORD /d 1 /f
+        # Anonymous Enumeration
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RestrictAnonymous /t REG_DWORD /d 1 /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RestrictAnonymousSAM /t REG_DWORD /d 1 /f
+        # Disable loading of test signed kernel-drivers
+        Bcdedit.exe -set TESTSIGNING OFF
+        Bcdedit.exe -set loadoptions ENABLE_INTEGRITY_CHECKS
+        # Disable 8.3 file names
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v NtfsDisable8dot3NameCreation /t REG_DWORD /d 1 /f
+        # Disable anonymous enumeration of shares and pipes
+        reg add "HKLMSYSTEM\CurrentControlSet\Services\LanManServer\Parameters" /v RestrictNullSessAccess /t REG_DWORD /d 1 /f
+        reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v NullSessionPipes /t REG_MULTI_SZ /d "" /f
+        reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v NullSessionShares /t REG_MULTI_SZ /d "" /f
         ######### Constrained Language Mode #########
         [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
