@@ -218,7 +218,9 @@ function Invoke-SecureBaseline {
         reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v OutputDirectory /t REG_SZ /d "C:\Windows\debug\timber" /f
         # Powershell script block logging
         reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
-
+        # Disable BITS transfers
+        reg add "HKLM\Software\Policies\Microsoft\Windows\BITS" /v EnableBITSMaxBandwidth /t REG_DWORD /d 0 /f
+        reg add "HKLM\Software\Policies\Microsoft\Windows\BITS" /v MaxDownloadTime /t REG_DWORD /d 1 /f
         ######### Constrained Language Mode #########
         [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
