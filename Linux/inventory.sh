@@ -16,18 +16,20 @@ printf "${GREEN}
 printf "${GREEN}#############Installing potential dependencies############${NC}\n"
 IS_RHEL=false
 IS_DEBIAN=false
+IS_ALPINE=false
 IS_OTHER=false
-if command -v yum 2>/dev/null ; then
-    yum check-update -y
-    yum install iproute sed network-manager -y
+if command -v yum >/dev/null ; then
+    yum check-update -y >/dev/null
+    yum install net-tools iproute sed -y > /dev/null
     IS_RHEL=true
-elif command -v apt-get 2>/dev/null ; then
-    apt-get -qq update
-    apt-get -qq install net-tools iproute2 sed network-manager -y
+elif command -v apt-get >/dev/null ; then
+    apt-get -qq update >/dev/null
+    apt-get -qq install net-tools iproute2 sed -y
     IS_DEBIAN=true
-elif command -v apk 2>/dev/null ; then
-    apk update -y
-    apk add iproute2 net-tools networkmanager -y
+elif command -v apk >/dev/null ; then
+    apk update >/dev/null
+    apk add iproute2 net-tools >/dev/null
+    IS_ALPINE=true
 else
     printf "Unknown package manager, install netstat/ip/ifconfig/sed manually if necessary\n"
 fi
@@ -36,48 +38,28 @@ printf "\n${GREEN}#############HOST INFORMATION############${NC}\n"
 
 HOST=$(hostname)
 OS=$(cat /etc/os-release  | grep PRETTY_NAME | sed 's/PRETTY_NAME=//' | sed 's/"//g')
-INTERFACES=$(ip a | grep -P '\d{0,}: ' | awk -F ' ' '{print $2}' | sed 's/://' 2>/dev/null)
+INTERFACES=$(ip -br l | awk '{print $1}')
 IP=""
-USERS=$(cat /etc/passwd | grep -vE '(false|nologin|sync)$')
-SUDOERS=$(cat /etc/sudoers /etc/sudoers.d/* | grep -vE '#|Defaults|^\s*$')
-SUIDS=$(find /bin /sbin /usr -perm -u=g+s -type f -exec ls {} -la \; | grep -Ev '(sudo|chsh|chfn|su|umount|newgrp|pppd|polkit-agent-helper-1|dbus-daemon-launch-helper|snap-confine|auth_pam_tool|ssh-keysign|Xorg.wrap|fusermount3|vmware-user-suid-wrapper|pkexec|mount|gpasswd|pkexec|passwd|ping|exim4|cockpit-wsintance|cockpit-session)$')
+USERS=$(cat /etc/passwd | grep -vE '(false|nologin|sync)$' | grep -E '/.*sh$')
+SUDOERS=$(cat /etc/sudoers /etc/sudoers.d/* 2>/dev/null | grep -vE '#|Defaults|^\s*$')
+SUIDS=$(find /bin /sbin /usr -perm -u=g+s -type f -exec ls {} -la \; | grep -Ev '(sudo|chsh|chfn|su|umount|newgrp|pppd|polkit-agent-helper-1|dbus-daemon-launch-helper|snap-confine|auth_pam_tool|ssh-keysign|Xorg.wrap|fusermount3|vmware-user-suid-wrapper|pkexec|mount|gpasswd|passwd|ping|exim4|cockpit-wsintance|cockpit-session|usernetctl|pam_timestamp_check|unix_chkpwd|crontab|chage|bbsuid|doas)$')
 WORLDWRITEABLES=$(find /usr /bin/ /sbin /var/www -perm -o=w -type f -exec ls {} -la \; 2>/dev/null)
-if [ $IS_RHEL = true ]; then
+if [ $IS_RHEL = true ] || [ $IS_ALPINE = true ]; then
     SUDOGROUP=$(cat /etc/group | grep wheel | sed 's/x:.*:/\ /')
 else
     SUDOGROUP=$(cat /etc/group | grep sudo | sed 's/x:.*:/\ /')
 fi
 
 for i in $INTERFACES
-do
-    IPENTRY=''
-    IPADDRESSESOFINTERFACES=$( ip addr show "$i" 2>/dev/null | grep inet | sed 's/\s*inet/inet/' | sed 's/\/[0-9]*//' | grep -v inet6 | awk -F ' ' '{print $2}' 2>/dev/null)
-    for j in $IPADDRESSESOFINTERFACES
-    do
-        IPENTRY=$(printf "$IPENTRY $j\n")
-    done
+do 
     SPACE='\n'
-    IP=$(printf "$IP$SPACE$i: ${YELLOW}$IPENTRY${NC}" )
-done
-
-NMCLI=$(nmcli -t --fields NAME con show --active | sed 's/\ /delimiter/g')
-DNS=''
-for i in $NMCLI
-do
-    parsed=$(echo $i | sed 's/delimiter/\ /g')
-    DNSENTRY=$(nmcli --fields ip4.dns con show "$parsed" 2>/dev/null | sed 's/dns:\s*/dns: /' | sed 's/.*://' | awk '{print $1}' )
-    if echo "$DNSENTRY" | grep -qi '\-\-'  || echo "$DNSENTRY" | grep -qiE '^$' ; then
-        continue
-    fi
-    DNS=$(printf "$DNS\n$parsed: ${YELLOW}$DNSENTRY${NC}")
+    IP=$(printf "$IP$SPACE$i: $(ip addr show $i | grep -E 'inet\s+' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/' | sed 's/\///')")
 done
 
 printf "${BLUE}[+] Hostname:${NC} $HOST\n"
 printf "${BLUE}[+] OS:${NC} $OS\n"
 echo "${BLUE}[+] IP Addresses and interfaces${NC}"
 echo "$IP"
-printf "\n${BLUE}[+] DNS Servers${NC}"
-echo "$DNS"
 printf "\n${BLUE}[+] Users${NC}\n"
 echo "${YELLOW}$USERS${NC}"
 printf "\n${BLUE}[+] /etc/sudoers and /etc/sudoers.d/*${NC}\n"
@@ -89,7 +71,11 @@ echo "${YELLOW}$SUIDS${NC}"
 printf "\n${BLUE}[+] World Writeable Files${NC}\n"
 echo "${YELLOW}$WORLDWRITEABLES${NC}"
 printf "\n${GREEN}#############SERVICE INFORMATION############${NC}"
-SERVICES=$(systemctl --type=service  | grep active | awk '{print $1}')
+if [  $IS_ALPINE = true ]; then
+    SERVICES=$(rc-status -s | grep started | awk '{print $1}')
+else
+    SERVICES=$(systemctl --type=service  | grep active | awk '{print $1}')
+fi
 APACHE2=false
 NGINX=false
 checkService()
