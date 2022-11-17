@@ -1,18 +1,9 @@
 #!/bin/sh
-ncolors=$(tput -T tmux-256color colors)
-#if [ "$ncolors" -ge 8 ]; then
- #   ORAG='\033[0;33m'
-  #  GREEN='\033[0;32m'
-   # YELLOW='\033[1;33m'
-    #BLUE='\033[0;36m'
-    #NC='\033[0m' # No Color
-#else
-    ORAG=''
-    GREEN=''
-    YELLOW=''
-    BLUE=''
-    NC=''
-#fi
+ORAG=''
+GREEN=''
+YELLOW=''
+BLUE=''
+NC=''
 
 printf "${GREEN}
       ##################################
@@ -27,12 +18,16 @@ IS_RHEL=false
 IS_DEBIAN=false
 IS_OTHER=false
 if command -v yum 2>/dev/null ; then
-    #yum install iproute sed -y
+    yum check-update -y
+    yum install iproute sed network-manager -y
     IS_RHEL=true
-elif  command -v apt-get >/dev/null ; then
-    #apt-get -qq update
-    #apt-get -qq install net-tools iproute2 sed -y
+elif command -v apt-get 2>/dev/null ; then
+    apt-get -qq update
+    apt-get -qq install net-tools iproute2 sed network-manager -y
     IS_DEBIAN=true
+elif command -v apk 2>/dev/null ; then
+    apk update -y
+    apk add iproute2 net-tools networkmanager -y
 else
     printf "Unknown package manager, install netstat/ip/ifconfig/sed manually if necessary\n"
 fi
