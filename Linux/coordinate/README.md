@@ -1,5 +1,7 @@
 # Coordinate
 
+99% Sourque, .1% nigelius gerald
+
 Automation tool that runs many scripts concurrently over SSH on many remote boxes.
 
 This is meant to be used to deploy minute-zero persistence in red team events, or remediation in blue team events.
