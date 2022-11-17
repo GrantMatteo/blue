@@ -284,18 +284,29 @@ func ssher(i instance, sess *ssh.Session, scriptChan chan string, exitChan chan 
 				fmt.Printf("Difference Length -> %d\n", len(difference))
 				*/
 				if difference != "root" {
-					Stdout(i, strings.TrimSpace(stdoutBytes.String()))
-					Stderr(i, strings.TrimSpace(stderrBytes.String()))
 					Crit(i, "Failed to escalate from", i.Username, "to root (via sudo) on", i.IP)
 					fmt.Printf("Error was: %s", stderrBytes.String())
-					//return
+					return
 				}
 
 				InfoExtra(i, "Successfully elevated to root (via sudo).")
 			}
 		}
 	}
-
+	                                fmt.Fprintf(stdin, "sudo -Si \n%s\n", i.Password)
+        //Compare stdout to check hostname
+        origStdOut := stdoutBytes
+        fmt.Fprintf(stdin, "hostname\n")
+        time.Sleep(1 * time.Second)
+        /*
+        fmt.Printf("Orig -> %s\n", origStdOut.String())
+        fmt.Printf("Orig Length is -> %d\n", origStdOut.Len())
+        fmt.Printf("Current -> %s\n", stdoutBytes.String())
+        fmt.Printf("Current Length is -> %d\n", stdoutBytes.Len())
+        */
+        difference := strings.Replace(stdoutBytes.String(), origStdOut.String(), "", -1)
+        difference = strings.Replace(difference, "\n", "", -1)
+	i.Outfile = difference+"."+i.Outfile
 	for {
 		script, ok := <-scriptChan
 		if !ok {

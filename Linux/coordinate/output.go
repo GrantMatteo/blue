@@ -32,7 +32,7 @@ func Time() string {
 func Stdout(i instance, a ...interface{}) {
 	logger.Printf("%s%s%s%s%s", Green(""), Brown(""), Red(""), BrightCyan(""), BrightCyan(""))
 	logger.Printf("%s%s:%s%s\n%s", tabs, BrightCyan("[STDOUT"), Summary(i), BrightCyan("]"), White(fmt.Sprintln(a...)))
-	f, _ := os.Create(i.Outfile)
+	f, _ := os.Create("output/"+i.Outfile)
 	fmt.Fprintf(f, "%s", fmt.Sprintln(a...))
 }
 
