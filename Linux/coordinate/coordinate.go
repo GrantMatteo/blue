@@ -23,6 +23,7 @@ type instance struct {
 	Password string
 	Script   string
 	Port     int
+	Outfile	string
 }
 
 type Script struct {
@@ -45,6 +46,7 @@ var (
 	usernames = flag.StringP("usernames", "u", "", "List of usernames")
 	passwords = flag.StringP("passwords", "p", "", "List of passwords")
 	callbacks = flag.StringP("callbacks", "c", "", "Callback IP address(es)")
+	outfile	  = flag.StringP("outfile", "o", "output.txt", "Output file")
 	//key       = flag.StringP("key", "k", "", "Use this SSH key to connect")
 	su           = flag.StringP("su", "R", "", "Attempt to su to root with this password, if not root")
 	environment  = flag.StringP("env", "E", "", "Set these variables before running scripts")
@@ -67,6 +69,8 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	flag.Parse()
 
+	// Set Outfile
+	//outfile := *outfile
 	// Set timeouts
 	timeout = time.Duration(*timelimit * int(time.Second))
 	shortTimeout = time.Duration(*timelimit * 40 * int(time.Millisecond))
@@ -175,7 +179,7 @@ func main() {
 	for _, ip := range addresses {
 		tid++
 		wg.Add(1)
-		go runner(ip.String(), &wg)
+		go runner(ip.String(), *outfile, &wg)
 	}
 	wg.Wait()
 }

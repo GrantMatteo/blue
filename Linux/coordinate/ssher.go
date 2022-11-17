@@ -51,7 +51,7 @@ type scriptState struct {
 	Roulette    uint
 }
 
-func runner(ip string, w *sync.WaitGroup) {
+func runner(ip string, outfile string, w *sync.WaitGroup) {
 	defer w.Done()
 
 	found := false
@@ -60,6 +60,7 @@ func runner(ip string, w *sync.WaitGroup) {
 	var wg sync.WaitGroup
 	i := instance{
 		IP: ip,
+		Outfile: outfile,
 	}
 
 	for _, u := range usernameList {
@@ -239,7 +240,7 @@ func ssher(i instance, sess *ssh.Session, scriptChan chan string, exitChan chan 
 
 		// If su is enabled, try to su to root.
 		if *su != "" {
-			fmt.Fprintf(stdin, "su -\n")
+			fmt.Fprintf(stdin, "su\n")
 			time.Sleep(2 * time.Second)
 			stderrOffset = stderrBytes.Len()
 			DebugExtra(i, "Trying password", *su, "with su")
@@ -248,7 +249,7 @@ func ssher(i instance, sess *ssh.Session, scriptChan chan string, exitChan chan 
 			if stderrBytes.Len()-stderrOffset > 0 {
 				Stderr(i, strings.TrimSpace(stderrBytes.String()))
 				Crit(i, "Failed to escalate from", i.Username, "to root (via su) on", i.IP)
-				return
+				//return
 			} else {
 				InfoExtra(i, "Successfully escalated to root (via su).")
 				escalated = true
@@ -287,7 +288,7 @@ func ssher(i instance, sess *ssh.Session, scriptChan chan string, exitChan chan 
 					Stderr(i, strings.TrimSpace(stderrBytes.String()))
 					Crit(i, "Failed to escalate from", i.Username, "to root (via sudo) on", i.IP)
 					fmt.Printf("Error was: %s", stderrBytes.String())
-					return
+					//return
 				}
 
 				InfoExtra(i, "Successfully elevated to root (via sudo).")
@@ -348,6 +349,7 @@ func ssher(i instance, sess *ssh.Session, scriptChan chan string, exitChan chan 
 			_, err = fmt.Fprintf(stdin, "%s\n", line)
 			if err != nil {
 				Crit(i, "Error submitting line to stdin:", err)
+				Crit(i, "Line was: ", line)
 				break
 			}
 
