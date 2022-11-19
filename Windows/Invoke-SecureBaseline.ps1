@@ -4,6 +4,7 @@ function Invoke-SecureBaseline {
     Param([switch]$2008r2)
 
     $OS = (Get-WMIObject win32_operatingsystem).caption
+    # TODO: Remove
     if ($OS -notmatch "ista|2008|2003|XP|xp|Xp|7") {
         $Error.Clear()
         $ErrorActionPreference = "SilentlyContinue"
