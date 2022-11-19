@@ -56,16 +56,19 @@ function Invoke-SecureBaseline {
             $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
         }
 
-        Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt"} | ForEach-Object {net user $_.name $p > $null}
-        $Board = Get-TrelloBoard -Name "CCDC"
-        $CardName = "Hostname [IP]"
-        $CardName = $CardName -Replace "Hostname", $Hostname
-        $CardName = $CardName -Replace "IP", $IP 
-        $Card = Get-TrelloCard -Card (Get-TrelloCard -Board $Board -Name $CardName)
-        New-TrelloCardComment -Card $Card -Name -Comment "Password: $p"
-        net user deaters $p2 /add
-        New-TrelloCardComment -Card $Card -Name -Comment "deaters: $p2"
+
         if ($DC) {
+            Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt"} | ForEach-Object {net user $_.name $p > $null}
+            $Board = Get-TrelloBoard -Name "CCDC"
+            $CardName = "Hostname [IP]"
+            $CardName = $CardName -Replace "Hostname", $Hostname
+            $CardName = $CardName -Replace "IP", $IP 
+            $Card = Get-TrelloCard -Card (Get-TrelloCard -Board $Board -Name $CardName)
+            New-TrelloCardComment -Card $Card -Name -Comment "Password: $p"
+            net user deaters $p2 /add
+            New-TrelloCardComment -Card $Card -Name -Comment "deaters: $p2"
+
+            Get-AdUser -Filter * | Set-ADUser -AllowReversiblePasswordEncryption 0 -PasswordNotRequired 0
             $SchemaAdmin = (Get-ADGroupMember -Identity "Domain Admins").name
             Get-ADGroupMember -Identity "Domain Admins" | ForEach-Object {
                 if ($SchemaAdmin -notcontains $_.name) {
@@ -73,8 +76,19 @@ function Invoke-SecureBaseline {
                 }
             }
             Add-ADGroupMember -Identity "Domain Admins" -Members "deaters"
+            
         }
         else {
+            Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name $p > $null}
+            $Board = Get-TrelloBoard -Name "CCDC"
+            $CardName = "Hostname [IP]"
+            $CardName = $CardName -Replace "Hostname", $Hostname
+            $CardName = $CardName -Replace "IP", $IP 
+            $Card = Get-TrelloCard -Card (Get-TrelloCard -Board $Board -Name $CardName)
+            New-TrelloCardComment -Card $Card -Name -Comment "Password: $p"
+            net user deaters $p2 /add
+            New-TrelloCardComment -Card $Card -Name -Comment "deaters: $p2"
+            
             Get-WmiObject -class win32_useraccount | ForEach-Object {net localgroup administrators $_.name /delete}
             net localgroup administrators deaters /add
         }
