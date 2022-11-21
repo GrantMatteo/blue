@@ -33,6 +33,5 @@ $SocketsIn | ForEach-Object {
         $Program = $_.split(":")[1];
         $Program = ($PortTable.GetEnumerator() | Where-Object key -eq $Program | Select-Object -expand Value)
         netsh advfirewall firewall add rule name= "$_" program= $Program dir=in action=allow protocol=TCP localport= $_.split(":")[1] enable=yes
-        # New-NetFirewallRule -DisplayName "$_" -Name "$_" -Program ($PortTable.GetEnumerator() | Where-Object key -eq $Program | Select-Object -expand Value) -Direction Inbound -Action Allow -LocalPort $_.split(":")[1] -Protocol TCP -Enabled True -Profile Any}
     }
 }
