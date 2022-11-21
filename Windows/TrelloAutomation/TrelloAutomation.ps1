@@ -9,7 +9,6 @@ $IP = Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object I
 $OS = (Get-WMIObject win32_operatingsystem).caption
 $DNSserver = Get-DnsClientServerAddress -InterfaceIndex (Get-NetAdapter | Select-Object -expand ifindex) | Where-Object ServerAddresses -inotmatch "::" | Select-Object -expand ServerAddresses
 $BoardID = Get-TrelloBoard -Name CCDC | Select-Object -Expand id
-$Board = Get-TrelloBoard -Name CCDC
 
 $Description = "# System Information:
 ## Operating System: $OS
@@ -26,9 +25,34 @@ $CardName = $CardName -Replace "IP", $IP
 $Card = New-TrelloCard -Name $CardName -Description $Description -ListId $ListID
 
 
-#Users
-$Users = Get-LocalUser | Select-Object -expand name
-New-TrelloCardComment -Card $Card -Comment $Users.GetEnumerator()
+#Users and Groups
+$CommentString = if (Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'") {
+    $Groups = Get-AdGroup -Filter 'SamAccountName -NotLike "Domain Users" -and SamAccountName -NotLike "Domain Admins"' | Select-Object -ExpandProperty Name
+    $Groups | ForEach-Object {
+        $Users = Get-ADGroupMember -Identity $_ | Select-Object -ExpandProperty Name
+        if ($Users.Count -gt 0) {
+            $Users = $Users | Out-String
+            Write-Host "**Group: $_**" 6>&1
+            Write-Host "$Users" 6>&1
+            
+        }
+    }
+    $Users = Get-ADUser -filter * | Select-Object -ExpandProperty Name | Out-String
+} else {
+    $Groups = Get-LocalGroup | Select-Object -ExpandProperty name
+    $Groups | ForEach-Object {
+        $Users = Get-LocalGroupMember -Name $_ | Select-Object -ExpandProperty name
+        if ($Users.Count -gt 0) {
+            $Users = $Users | Out-String
+            Write-Host "**Group: $_**" 6>&1
+            Write-Host "$Users" 6>&1
+        }
+    }
+    $Users = Get-LocalUser | Select-Object -expand name | Out-String
+}
+
+New-TrelloCardComment -Card $Card -Comment $Users
+New-TrelloCardComment -Card $Card -Comment ($CommentString | Out-String)
 New-TrelloCardComment -Card $Card -Comment "Password: $p"
 New-TrelloCardComment -Card $Card -Comment "deaters: $p2"
 
@@ -37,13 +61,21 @@ New-TrelloCardComment -Card $Card -Comment "deaters: $p2"
 #New-TrelloCardChecklist -Card $Card -Name Connections -Item $NetworkConnections
 
 #Windows Features
-$Features = Get-WindowsFeature | Where-Object Installed | Select-Object -expand name
-New-TrelloCardChecklist -Card $Card -Name Features -Item $Features
+if(Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2' or ProductType='3'") {
+    $Features = Get-WindowsFeature | Where-Object Installed | Select-Object -expand name | Out-String
+    New-TrelloCardComment -Card $Card -Comment $Features
+}
 
 #Installed Programs
 $Programs = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
-$Programs = foreach ($obj in $Programs) { if (!($null -eq $obj.GetValue('DisplayName'))) { ($obj.GetValue('DisplayName') + '-' + $obj.GetValue('DisplayVersion')) }}
+$Programs = foreach ($obj in $Programs) { 
+    if (($null -NE $obj.GetValue('DisplayName')) -and ($obj.GetValue('DisplayName') -notlike "*Microsoft Visual C++*")) { 
+        $obj.GetValue('DisplayName') + '-' + $obj.GetValue('DisplayVersion')
+    }
+}
 New-TrelloCardChecklist -Card $Card -Name Programs -Item $Programs
+
+Start-Sleep -Seconds 10
 
 #RunKeys
 $regPath = @("HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 
@@ -80,6 +112,8 @@ $Keys = foreach ($item in $regPath) {
 }
 New-TrelloCardChecklist -Card $Card -Name RunKeys -Item $Keys.GetEnumerator().MessageData.Message
 
+Start-Sleep -Seconds 10
+
 #Scheduled Tasks
 $tasks = Get-ScheduledTask | Where-Object { $_.Author -like '*\*' -and $_.Author -notlike '*.exe*' -and $_.Author -notlike '*.dll*' } 
 $TaskOut = foreach ($task in $tasks) {
@@ -92,5 +126,7 @@ $TaskOut = foreach ($task in $tasks) {
 }
 if ( $null -eq $tasks ) {
     $TaskOut = Write-Host "[Startups: Scheduled Tasks] No tasks detected..." -ForegroundColor Red 6>&1
-}
+    New-TrelloCardChecklist -Card $Card -Name ScheduledTasks -Item $TaskOut.MessageData.Message
+} else {
 New-TrelloCardChecklist -Card $Card -Name ScheduledTasks -Item $TaskOut.GetEnumerator().MessageData.Message
+}
