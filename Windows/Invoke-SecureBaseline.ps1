@@ -19,11 +19,6 @@ function Invoke-SecureBaseline {
             Import-Module WebAdministration
         }
 
-        $Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select-Object -expand hostname
-        $IP = Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress | Where-Object IPAddress -NotLike '127.0.0.1' | Select-Object -ExpandProperty IPAddress
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Install-Module PowerTrello -Force -Confirm:$false
-
         ######### SMB #########
         reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" /v SMB1 /t REG_DWORD /d 0 /f
         reg add "HKLM\System\CurrentControlSet\Services\LanManWorkstation\Parameters" /v RequireSecuritySignature /t REG_DWORD /d 1 /f
@@ -44,7 +39,7 @@ function Invoke-SecureBaseline {
         ######### Passwords #########
         # TODO: Generate CSV of Users for PCR
         # Add neccesary framework
-        Add-Type -AssemblyName System.web
+        Add-Type -AssemblyName System.Web
 
         # Generate a 12 character string with 3 alphanumeric characters
         $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
@@ -59,16 +54,8 @@ function Invoke-SecureBaseline {
 
         if ($DC) {
             Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt"} | ForEach-Object {net user $_.name $p > $null}
-            $Board = Get-TrelloBoard -Name "CCDC"
-            $CardName = "Hostname [IP]"
-            $CardName = $CardName -Replace "Hostname", $Hostname
-            $CardName = $CardName -Replace "IP", $IP 
-            $Card = Get-TrelloCard -Card (Get-TrelloCard -Board $Board -Name $CardName)
-            New-TrelloCardComment -Card $Card -Name -Comment "Password: $p"
             net user deaters $p2 /add
-            New-TrelloCardComment -Card $Card -Name -Comment "deaters: $p2"
-
-            Get-AdUser -Filter * | Set-ADUser -AllowReversiblePasswordEncryption 0 -PasswordNotRequired 0
+            Get-ADUser -Filter * | Set-ADUser -AllowReversiblePasswordEncryption 0 -PasswordNotRequired 0
             $SchemaAdmin = (Get-ADGroupMember -Identity "Domain Admins").name
             Get-ADGroupMember -Identity "Domain Admins" | ForEach-Object {
                 if ($SchemaAdmin -notcontains $_.name) {
@@ -80,15 +67,8 @@ function Invoke-SecureBaseline {
         }
         else {
             Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name $p > $null}
-            $Board = Get-TrelloBoard -Name "CCDC"
-            $CardName = "Hostname [IP]"
-            $CardName = $CardName -Replace "Hostname", $Hostname
-            $CardName = $CardName -Replace "IP", $IP 
-            $Card = Get-TrelloCard -Card (Get-TrelloCard -Board $Board -Name $CardName)
-            New-TrelloCardComment -Card $Card -Name -Comment "Password: $p"
+            powershell.exe "C:\TrelloAutomation.ps1 $p $p2"
             net user deaters $p2 /add
-            New-TrelloCardComment -Card $Card -Name -Comment "deaters: $p2"
-            
             Get-WmiObject -class win32_useraccount | ForEach-Object {net localgroup administrators $_.name /delete}
             net localgroup administrators deaters /add
         }
