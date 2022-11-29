@@ -1,7 +1,7 @@
 function Invoke-SecureBaseline {
 
-    Param([switch]$oldaf)
-    Param([switch]$2008r2)
+    Param([switch]$Pre2008OnPrem)
+    Param([switch]$2008r2OnPrem)
 
     $OS = (Get-WMIObject win32_operatingsystem).caption
     # TODO: Remove
@@ -83,7 +83,7 @@ function Invoke-SecureBaseline {
         # https://learn.microsoft.com/en-us/troubleshoot/windows-client/windows-security/enable-ntlm-2-authentication
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LmCompatibilityLevel /t REG_DWORD /d 5 /f
         
-        if (!$oldaf -and !$2008r2) {
+        if (!$Pre2008OnPrem -and !$2008r2OnPrem) {
             # Deny all NTLM authentication in the domain
             reg add "HKLM\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v RestrictNTLMInDomain /t REG_DWORD /d 7 /f
             # Deny all inbound and outbound NTLM + audit attempts
@@ -179,14 +179,14 @@ function Invoke-SecureBaseline {
             # CVE-2021-42278 & CVE-2021-42287 (noPac)
             Set-ADDomain -Identity $Domain -Replace @{"ms-DS-MachineAccountQuota"="0"}
             # TODO: Domain Member: Digitally encrypt or sign secure channel data (always) - Enabled works 2008
-            if ($2008r2) {
+            if ($2008r2OnPrem) {
                 # Domain controller: LDAP server signing requirements
                 reg add "HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v LDAPServerIntegrity /t REG_DWORD /d 2 /f
                 # Domain controller: LDAP server channel binding token requirements (1 for 2008 and before supposedly)
                 # TODO: Test below for 2008r2 
                 reg add "HKLM\System\CurrentControlSet\Services\NTDS\Parameters" /v LdapEnforceChannelBinding /t REG_DWORD /d 2 /f
             }
-            elseif ($oldaf) {
+            elseif ($Pre2008OnPrem) {
                 # Domain controller: LDAP server signing requirements
                 reg add "HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v LDAPServerIntegrity /t REG_DWORD /d 1 /f
                 # Domain controller: LDAP server channel binding token requirements (1 for 2008 and before)
