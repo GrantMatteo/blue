@@ -293,9 +293,9 @@ function Invoke-SecureBaseline {
         [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
         ######### Sysmon Setup #########
-        (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',".\Sysmon.exe")
-        (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',".\sysmonconfig-export.xml")
-        .\sysmon.exe -accepteula -i sysmonconfig-export.xml
+        (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',"C:\Windows\Sysmon.exe")
+        (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"C:\Windows\sysmonconfig-export.xml")
+        & "C:\Windows\sysmon.exe" -accepteula -i sysmonconfig-export.xml
         $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
     }
     else {
