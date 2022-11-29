@@ -73,6 +73,8 @@ function Invoke-SecureBaseline {
         }
         
         powershell.exe -file "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1" -p $p -p2 $p2
+        Clear-Variable p -Scope Global
+        Clear-Variable p2 -Scope Global
 
         # TODO: PasswordNotRequired $false
         ######### PTH Mitigation #########
