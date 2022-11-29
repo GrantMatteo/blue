@@ -67,11 +67,12 @@ function Invoke-SecureBaseline {
         }
         else {
             Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name $p > $null}
-            powershell.exe "C:\TrelloAutomation.ps1 $p $p2"
             net user deaters $p2 /add
             Get-WmiObject -class win32_useraccount | ForEach-Object {net localgroup administrators $_.name /delete}
             net localgroup administrators deaters /add
         }
+        
+        powershell.exe "$env:ProgramFiles\blue-main\Windows\TrelloAutomation\TrelloAutomation.ps1 $p $p2"
 
         # TODO: PasswordNotRequired $false
         ######### PTH Mitigation #########

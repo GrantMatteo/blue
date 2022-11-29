@@ -4,11 +4,11 @@ $TrelloAPI = Read-Host -Prompt "Trello API Key (https://trello.com/app-key)"
 $TrelloAccessToken = Read-Host -Prompt "Trello Access Token"
 
 
-wget https://github.com/evanjd711/PowershellProjects/archive/refs/heads/main.zip -UseBasicParsing -OutFile $env:ProgramFiles\Trello.zip
-Expand-Archive $env:ProgramFiles\Trello.zip -DestinationPath $env:ProgramFiles\Trello\
-$TrelloPath = "$env:ProgramFiles\Trello\PowershellProjects-main\TrelloAutomation\"
+wget https://github.com/cpp-cyber/blue/archive/refs/heads/main.zip -UseBasicParsing -OutFile $env:ProgramFiles\blue.zip
+Expand-Archive $env:ProgramFiles\blue.zip -DestinationPath $env:ProgramFiles\blue\
+$TrelloPath = "$env:ProgramFiles\blue\blue-main\Windows\TrelloAutomation\"
 
-$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select -expand hostname
+#$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select -expand hostname
 $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty DNSHostname
 $Denied = @()
 foreach ($Computer in $Computers) {
@@ -20,19 +20,19 @@ foreach ($Computer in $Computers) {
     }
 }
 
-$WinRMable = Compare-Object $Computers $Denied | Select -ExpandProperty InputObject
+$WinRMable = Compare-Object $Computers $Denied | Select-Object -ExpandProperty InputObject
 
 Set-TrelloConfiguration -AccessToken $TrelloAccessToken -ApiKey $TrelloAPI
-$Board = New-TrelloBoard -Name CCDC
-$BoardID = Get-TrelloBoard -Name CCDC | Select -Expand id
+New-TrelloBoard -Name CCDC
+$BoardID = Get-TrelloBoard -Name CCDC | Select-Object -Expand id
 
 #Create Lists
-$IncomingTicketsList = New-TrelloList -BoardID $BoardID -Name 'Incoming Tickets' -Position 1 | Select -expand id
-$ResolvedTicketsList = New-TrelloList -BoardID $BoardID -Name 'Resolved Tickets' -Position 2 | Select -expand id
-$LinuxList = New-TrelloList -BoardID $BoardID -Name 'Linux' -Position 3 | Select -expand id
-$WindowsList = New-TrelloList -BoardID $BoardID -Name 'Windows' -Position 4 | Select -expand id
-$NetworkingList = New-TrelloList -BoardID $BoardID -Name 'Networking' -Position 5 | Select -expand id
-$BusinessList = New-TrelloList -BoardID $BoardID -Name 'Business' -Position 6 | Select -expand id
+$IncomingTicketsList = New-TrelloList -BoardID $BoardID -Name 'Incoming Tickets' -Position 1 | Select-Object -expand id
+New-TrelloList -BoardID $BoardID -Name 'Resolved Tickets' -Position 2 | Select-Object -expand id
+New-TrelloList -BoardID $BoardID -Name 'Linux' -Position 3 | Select-Object -expand id
+$WindowsList = New-TrelloList -BoardID $BoardID -Name 'Windows' -Position 4 | Select-Object -expand id
+New-TrelloList -BoardID $BoardID -Name 'Networking' -Position 5 | Select-Object -expand id
+New-TrelloList -BoardID $BoardID -Name 'Business' -Position 6 | Select-Object -expand id
 
 #Create Cards for Incoming Tickets
 $BoxTemplateCard = New-TrelloCard -ListId $IncomingTicketsList -Name 'Box Template [DO NOT TOUCH]'
@@ -44,6 +44,5 @@ Invoke-Command $WinRMable -ScriptBlock {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Install-Module PowerTrello -Scope AllUsers -Confirm:$false -Force
     Set-TrelloConfiguration -ApiKey $Using:TrelloAPI -AccessToken $Using:TrelloAccessToken -ErrorAction SilentlyContinue
-    Sleep 15
-    New-HostCard -BoardID $Using:BoardID -System 'Windows' -User 'Tanay'
+    #New-HostCard -BoardID $Using:BoardID -System 'Windows' -User 'Tanay'
 }

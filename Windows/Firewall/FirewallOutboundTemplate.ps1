@@ -18,6 +18,6 @@ for ($i = 0; $i -lt $LogOut.Length; $i++) {
 
 $SocketsOut = $LogOut | Select-Object -Unique
 
-$LogOut = $LogOut | Where-Object {$_ -like "192.168.*" -or $_ -like "10.*" -or $_ -like "172.16.*" -or $_ -like "172.17.*" -or $_ -like "172.18.*" -or $_ -like "172.19.*" -or $_ -like "172.20.*" -or $_ -like "172.21.*" -or $_ -like "172.22.*" -or $_ -like "172.23.*" -or $_ -like "172.24.*" -or $_ -like "172.25.*" -or $_ -like "172.26.*" -or $_ -like "172.27.*" -or $_ -like "172.28.*" -or $_ -like "172.29.*" -or $_ -like "172.30.*" -or $_ -like "172.31.*"}
+$SocketsOut = $SocketsOut | Where-Object {$_ -like "192.168.*" -or $_ -like "10.*" -or $_ -like "172.16.*" -or $_ -like "172.17.*" -or $_ -like "172.18.*" -or $_ -like "172.19.*" -or $_ -like "172.20.*" -or $_ -like "172.21.*" -or $_ -like "172.22.*" -or $_ -like "172.23.*" -or $_ -like "172.24.*" -or $_ -like "172.25.*" -or $_ -like "172.26.*" -or $_ -like "172.27.*" -or $_ -like "172.28.*" -or $_ -like "172.29.*" -or $_ -like "172.30.*" -or $_ -like "172.31.*"}
 
 $SocketsOut | ForEach-Object {New-NetFirewallRule -DisplayName "$_" -Direction Outbound -Action Allow -RemotePort $_.split(":")[1] -RemoteAddress $_.split(":")[0] -Protocol TCP -Enabled True -Profile Any}
