@@ -1,7 +1,9 @@
 function Invoke-SecureBaseline {
 
-    Param([switch]$Pre2008OnPrem)
-    Param([switch]$2008r2OnPrem)
+    Param(
+        [switch]$Pre2008OnPrem,
+        [switch]$2008r2OnPrem
+        )
 
     $OS = (Get-WMIObject win32_operatingsystem).caption
     # TODO: Remove
@@ -293,9 +295,9 @@ function Invoke-SecureBaseline {
         [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
         ######### Sysmon Setup #########
-        (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',"C:\Windows\Sysmon.exe")
-        (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"C:\Windows\sysmonconfig-export.xml")
-        & "C:\Windows\sysmon.exe" -accepteula -i sysmonconfig-export.xml
+        (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',"C:\Windows\System32\Sysmon.exe")
+        (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"C:\Windows\System32\sysmonconfig-export.xml")
+        & "C:\Windows\System32\sysmon.exe" -accepteula -i C:\Windows\System32\sysmonconfig-export.xml
         $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
     }
     else {
