@@ -72,7 +72,7 @@ function Invoke-SecureBaseline {
             net localgroup administrators deaters /add
         }
         
-        powershell.exe "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1 $p $p2"
+        powershell.exe -file "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1" -p $p -p2 $p2
 
         # TODO: PasswordNotRequired $false
         ######### PTH Mitigation #########
