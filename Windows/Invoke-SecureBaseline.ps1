@@ -300,7 +300,7 @@ function Invoke-SecureBaseline {
         (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',"$Home\Downloads\Sysmon.exe")
         (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"$Home\Downloads\sysmonconfig-export.xml")
         .\sysmon.exe -accepteula -i sysmonconfig-export.xml
-        $Error | Out-File $HOME\Documents\isb.txt -Append -Encoding utf8
+        $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
     }
     else {
         # Write 2008 earlier os configs here
