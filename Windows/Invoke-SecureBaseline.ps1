@@ -301,3 +301,5 @@ function Invoke-SecureBaseline {
         # Write 2008 earlier os configs here
     }
 }
+
+Invoke-SecureBaseline
