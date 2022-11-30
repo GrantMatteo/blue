@@ -13,6 +13,8 @@ else
     exit 1;
 fi
 
+grep -Prl 'general_log_file' /etc/ | xargs echo Enable SQL logging at
+
 cat << EOF > /etc/rsyslog.conf
 
 # Ubuntu Auth 
