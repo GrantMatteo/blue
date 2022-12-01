@@ -6,6 +6,8 @@ function Invoke-SecureBaseline {
         )
 
     $OS = (Get-WMIObject win32_operatingsystem).caption
+    Set-ExecutionPolicy Unrestricted -Force
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
     # TODO: Remove
     if ($OS -notmatch "ista|2008|2003|XP|xp|Xp|7") {
         $Error.Clear()
@@ -207,13 +209,11 @@ function Invoke-SecureBaseline {
 
         if ($IIS) {
             foreach ($app in (Get-ChildItem IIS:\AppPools)) {
-                # TODO: Change to appcmd
-                Set-ItemProperty -Path "IIS:\AppPools\$($app.name)" -name processModel.identityType -value 4
-            }
+                C:\Windows\System32\inetsrv\appcmd.exe set config -section:system.applicationHost/applicationPools "/[name='$($app.name)'].processModel.identityType:`"ApplicationPoolIdentity`"" /commit:apphost
+            }            
             foreach ($site in (Get-ChildItem IIS:\Sites)) {
-                Set-WebConfigurationProperty -filter /system.webServer/directoryBrowse -name enabled -PSPath $site.PSPath -value False
-                Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -location $site.name -filter "system.webServer/serverRuntime" -name "authenticatedUserOverride" -value "UseAuthenticatedUser"
-                Set-WebConfigurationProperty -pspath $site.PSPath -filter "system.webServer/serverRuntime" -name "authenticatedUserOverride" -value "UseAuthenticatedUser" -ErrorAction SilentlyContinue
+                C:\Windows\System32\inetsrv\appcmd.exe set config $site.name -section:system.webServer/directoryBrowse /enabled:"False"
+                C:\Windows\System32\inetsrv\appcmd.exe set config $site.name -section:system.webServer/serverRuntime /authenticatedUserOverride:"UseAuthenticatedUser"  /commit:apphost
             }
         }
         net stop spooler
@@ -296,8 +296,8 @@ function Invoke-SecureBaseline {
 
         ######### Sysmon Setup #########
         (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',"C:\Windows\System32\Sysmon.exe")
-        (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"C:\Windows\System32\sysmonconfig-export.xml")
-        & "C:\Windows\System32\sysmon.exe" -accepteula -i C:\Windows\System32\sysmonconfig-export.xml
+        (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"C:\Windows\System32\smce.xml")
+        & "C:\Windows\System32\sysmon.exe" -accepteula -i C:\Windows\System32\smce.xml
         $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
     }
     else {
