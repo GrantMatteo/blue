@@ -28,6 +28,7 @@ function Invoke-SecureBaseline {
         reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v RequireSecuritySignature /t REG_DWORD /d 1 /f
         reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v EnableSecuritySignature /t REG_DWORD /d 1 /f
         net share C$ /delete
+        net share ADMIN$ /delete
         if (!$DC) {
             # TODO: see if this automatically removes shares
             reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoShareServer /t REG_DWORD /d 0 /f
