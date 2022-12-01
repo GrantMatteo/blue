@@ -293,7 +293,7 @@ function Invoke-SecureBaseline {
         # Powershell script block logging
         reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
         ######### Constrained Language Mode #########
-        [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
+        #[System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
         ######### Sysmon Setup #########
         (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',"C:\Windows\System32\Sysmon.exe")
