@@ -130,3 +130,7 @@ if ( $null -eq $tasks ) {
 } else {
 New-TrelloCardChecklist -Card $Card -Name ScheduledTasks -Item $TaskOut.GetEnumerator().MessageData.Message
 }
+
+#SMB Shares
+$Shares = Get-WmiObject -Class Win32_Share | Select-Object -ExpandProperty Name,Path | Out-String
+New-TrelloCardComment -Card $Card -Comment $Shares
