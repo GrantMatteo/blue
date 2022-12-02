@@ -5,7 +5,7 @@ $TrelloAccessToken = Read-Host -Prompt "Trello Access Token"
 
 
 wget https://github.com/cpp-cyber/blue/archive/refs/heads/main.zip -UseBasicParsing -OutFile $env:ProgramFiles\blue.zip
-Expand-Archive $env:ProgramFiles\blue.zip -DestinationPath $env:ProgramFiles\blue\
+Expand-Archive $env:ProgramFiles\blue.zip -DestinationPath $env:ProgramFiles\blue\ -Force
 $TrelloPath = "$env:ProgramFiles\blue\blue-main\Windows\TrelloAutomation\"
 
 #$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select -expand hostname
