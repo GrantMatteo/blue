@@ -61,7 +61,7 @@ function Invoke-SecureBaseline {
             Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt"} | ForEach-Object {net user $_.name $p > $null}
             net user deaters $p2 /add
             Get-ADUser -Filter * | Set-ADUser -AllowReversiblePasswordEncryption 0 -PasswordNotRequired 0
-            $SchemaAdmin = (Get-ADGroupMember -Identity "Domain Admins").name
+            $SchemaAdmin = (Get-ADGroupMember -Identity "Schema Admins").name
             Get-ADGroupMember -Identity "Domain Admins" | ForEach-Object {
                 if ($SchemaAdmin -notcontains $_.name) {
                     Remove-ADGroupMember -Identity "Domain Admins" -Members $_.name -confirm:$false
@@ -81,7 +81,6 @@ function Invoke-SecureBaseline {
         Clear-Variable p -Scope Global
         Clear-Variable p2 -Scope Global
 
-        # TODO: PasswordNotRequired $false
         ######### PTH Mitigation #########
         # Disable storage of the LM hash for passwords less than 15 characters
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v NoLmHash /t REG_DWORD /d 1 /f
