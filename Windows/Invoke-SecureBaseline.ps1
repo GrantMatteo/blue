@@ -81,7 +81,7 @@ function Invoke-SecureBaseline {
     $task = New-ScheduledTask -Action $action -Trigger $trigger
     Register-ScheduledTask -TaskName "Trello" -InputObject $task -RunLevel highest
     Start-ScheduledTask -TaskName "Trello"
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 2
     Unregister-ScheduledTask -TaskName "Trello" -Confirm:$false
 
     Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
