@@ -8,14 +8,14 @@ if [[ ! -z $YUM_CMD ]]; then
 elif [[ ! -z $APT_GET_CMD ]]; then
     # Install powershell
     apt-get update -y 
-    apt update  && sudo apt install -y curl gnupg apt-transport-https
+    apt-get update  && sudo apt-get install -y curl gnupg apt-transport-https
     curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
     sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-debian-bullseye-prod bullseye main" > /etc/apt/sources.list.d/microsoft.list'
-    apt update && apt install -y powershell
+    apt-get update && apt-get install -y powershell
 
     # Install other dependencies
     apt-get install net-tools git vim 
 else
     echo "Installation Failed"
     exit 1;
-fi
+

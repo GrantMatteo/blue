@@ -6,12 +6,14 @@ APT_GET_CMD=$(which apt-get)
 if [[ ! -z $YUM_CMD ]]; then
     yum install rsyslog -y 
 elif [[ ! -z $APT_GET_CMD ]]; then
-    apt update
-    apt install rsyslog -y 
+    apt-get update
+    apt-get install rsyslog -y 
 else
     echo "Installation Failed"
     exit 1;
 fi
+
+
 
 grep -Prl 'general_log_file' /etc/ | xargs echo Enable SQL logging at
 
