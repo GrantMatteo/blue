@@ -12,3 +12,7 @@ function Test-WinRM {
         }
     }
 }
+
+function Get-Assets {
+    # Get sysinternals tools
+}

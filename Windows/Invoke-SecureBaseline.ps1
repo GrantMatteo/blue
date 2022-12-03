@@ -47,24 +47,23 @@ function Invoke-SecureBaseline {
     while ($p -match '[,;:|iIlLoO0]') {
         $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
     }
-    $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
-    while ($p2 -match '[,;:|iIlLoO0]') {
-        $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
-    }
 
     if ($DC) {
-        Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt"} | ForEach-Object {net user $_.name $p > $null}
-        net user deaters $p2 /add | Out-Null
+        Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt" -and $_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
+        
         $ADUsers = Get-ADUser -Filter *
         $ADUsers | Set-ADUser -AllowReversiblePasswordEncryption 0 -PasswordNotRequired 0
-        Get-ADGroupMember -Identity "Administrators" | Where-Object {$_.name -ne "Domain Admins" -and $_.name -ne "Enterprise Admins"} | ForEach-Object {Remove-ADGroupMember -Identity "Administrators" -Members $_.SamAccountName -confirm:$false}
-        Get-ADGroupMember -Identity "Domain Admins" | ForEach-Object {Remove-ADGroupMember -Identity "Domain Admins" -Members $_.SamAccountName -confirm:$false}
-        Get-ADGroupMember -Identity "Enterprise Admins" | ForEach-Object {Remove-ADGroupMember -Identity "Enterprise Admins" -Members $_.SamAccountName -confirm:$false}
-        Add-ADGroupMember -Identity "Domain Admins" -Members "deaters"
-        
+        Get-ADGroupMember -Identity "Administrators" | Where-Object {$_.name -ne "Domain Admins" -and $_.name -ne "Enterprise Admins" -and $_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Administrators" -Members $_.SamAccountName -confirm:$false}
+        Get-ADGroupMember -Identity "Domain Admins" | Where-Object {$_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Domain Admins" -Members $_.SamAccountName -confirm:$false}
+        Get-ADGroupMember -Identity "Enterprise Admins" | Where-Object {$_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Enterprise Admins" -Members $_.SamAccountName -confirm:$false}
+        $p2 = "N/A"
     }
     else {
-        Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name $p > $null}
+        $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
+        while ($p2 -match '[,;:|iIlLoO0]') {
+            $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
+        }
+        Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
         net user deaters $p2 /add | Out-Null
         # net localgroup Administrators | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 4 | ForEach-Object {net localgroup Administrators $_ /delete > $null}
         net localgroup Administrators deaters /add | Out-Null
@@ -79,7 +78,7 @@ function Invoke-SecureBaseline {
     Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
     $action = New-ScheduledTaskAction -Execute 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -Argument "-WindowStyle Hidden -NoProfile -file `"C:\Program Files\TrelloAutomation\TrelloAutomation.ps1`" $p, $p2"
     $task = New-ScheduledTask -Action $action -Trigger $trigger
-    Register-ScheduledTask -TaskName "Trello" -InputObject $task -RunLevel highest
+    Register-ScheduledTask -TaskName "Trello" -InputObject $task
     Start-ScheduledTask -TaskName "Trello"
     Start-Sleep -Seconds 2
     Unregister-ScheduledTask -TaskName "Trello" -Confirm:$false
