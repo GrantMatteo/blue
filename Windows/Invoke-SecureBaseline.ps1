@@ -314,4 +314,4 @@ function Invoke-SecureBaseline {
     $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
 }
 
-Invoke-SecureBaseline -shareip "IP" -sharename "sharename"
+Invoke-SecureBaseline
