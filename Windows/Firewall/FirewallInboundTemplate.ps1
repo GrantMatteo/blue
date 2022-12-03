@@ -10,6 +10,8 @@ New-NetFirewallRule -DisplayName "RDP" -Name "RDP" -Direction Inbound -Action Al
 New-NetFirewallRule -DisplayName "SSH" -Name "SSH" -Direction Inbound -Action Allow -LocalPort 22 -Protocol TCP -Enabled True -Profile Any
 New-NetFirewallRule -DisplayName "WinRM" -Name "WinRM" -Direction Inbound -Action Allow -LocalPort 5985 -Protocol TCP -Enabled True -Profile Any -RemoteAddress LocalSubnet
 
+
+
 Set-NetFirewallProfile -All -LogBlocked True -LogMaxSizeKilobytes 16384 -LogAllowed False -LogFileName "%systemroot%\System32\LogFiles\Firewall\pfirewall.log"
 
 Set-NetFirewallProfile -All -DefaultInboundAction Block -DefaultOutboundAction Allow  -Enabled True
