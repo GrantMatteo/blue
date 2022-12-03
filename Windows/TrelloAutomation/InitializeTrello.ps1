@@ -14,7 +14,6 @@ $Denied = @()
 foreach ($Computer in $Computers) {
     try {
         Copy-Item -Path $TrelloPath -Destination "$env:ProgramFiles" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
-        Copy-Item -Path $env:ProgramFiles\blue.zip -Destination "$env:ProgramFiles" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
     }
     catch {
         $Denied += $Computer
@@ -45,7 +44,6 @@ New-TrelloCardChecklist -Card $BoxTemplateCard -Name Baselining -Item @('Invento
 Invoke-Command $WinRMable -ScriptBlock {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Install-Module PowerTrello -Scope AllUsers -Confirm:$false -Force
-    Set-TrelloConfiguration -ApiKey $Using:TrelloAPI -AccessToken $Using:TrelloAccessToken -ErrorAction SilentlyContinue
-    Expand-Archive "$env:ProgramFiles\blue.zip" -DestinationPath "$env:ProgramFiles\blue\" -Force
+    Set-TrelloConfiguration -ApiKey $Using:TrelloAPI -AccessToken $Using:TrelloAccessToken
     #New-HostCard -BoardID $Using:BoardID -System 'Windows' -User 'Tanay'
 }
