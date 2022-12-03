@@ -180,10 +180,11 @@ function Invoke-SecureBaseline {
             }
         }
     }
-    $ConfigString = "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source
-    file_uploads=off"
+    $ConfigString_DisableFuncs = "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source"
+    $COnfigString_FileUploads = "file_uploads=off"
     Foreach ($ConfigFile in $ConfigFiles) {
         Add-Content $ConfigFile $ConfigString
+        Add-Content $ConfigFile $ConfigString_FileUploads
     }
     Write-Host "$env:ComputerName: PHP functions disabled" -ForegroundColor Green
     ######### Local Policies #########
