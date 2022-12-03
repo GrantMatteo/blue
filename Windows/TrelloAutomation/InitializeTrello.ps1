@@ -5,8 +5,17 @@ $TrelloAccessToken = Read-Host -Prompt "Trello Access Token"
 
 
 Invoke-WebRequest https://github.com/cpp-cyber/blue/archive/refs/heads/main.zip -UseBasicParsing -OutFile $env:ProgramFiles\blue.zip
+Invoke-WebRequest https://live.sysinternals.com/Sysmon.exe -UseBasicParsing -OutFile C:\Windows\System32\Sysmon.exe
+Invoke-WebRequest https://live.sysinternals.com/procexp.exe -UseBasicParsing -OutFile C:\Windows\System32\procexp.exe
+Invoke-WebRequest https://live.sysinternals.com/Autoruns.exe -UseBasicParsing -OutFile C:\Windows\System32\Autoruns.exe
+Invoke-WebRequest https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml -UseBasicParsing -OutFile C:\Windows\System32\smce.xml
 Expand-Archive $env:ProgramFiles\blue.zip -DestinationPath $env:ProgramFiles\blue\ -Force
 $TrelloPath = "$env:ProgramFiles\blue\blue-main\Windows\TrelloAutomation\"
+$Stigs = "$env:ProgramFiles\blue\blue-main\Windows\stigs.inf"
+$Sysmon = "C:\Windows\System32\Sysmon.exe"
+$Procexp = "C:\Windows\System32\procexp.exe"
+$Autoruns = "C:\Windows\System32\Autoruns.exe"
+$SysmonConfig = "C:\Windows\System32\smce.xml"
 
 #$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select -expand hostname
 $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty DNSHostname
@@ -14,7 +23,11 @@ $Denied = @()
 foreach ($Computer in $Computers) {
     try {
         Copy-Item -Path $TrelloPath -Destination "$env:ProgramFiles" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
-        Copy-Item -Path $env:ProgramFiles\blue.zip -Destination "$env:ProgramFiles" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
+        Copy-Item -Path $Stigs -Destination "$env:ProgramFiles\blue\blue-main\Windows\stigs.inf" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
+        Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\Sysmon.exe" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
+        Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
+        Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
+        Copy-Item -Path $SysmonConfig -Destination "C:\Windows\System32\smce.xml" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
     }
     catch {
         $Denied += $Computer
