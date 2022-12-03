@@ -23,7 +23,7 @@ $Denied = @()
 foreach ($Computer in $Computers) {
     try {
         Copy-Item -Path $TrelloPath -Destination "$env:ProgramFiles" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
-        Copy-Item -Path $Stigs -Destination "$env:ProgramFiles\blue\blue-main\Windows\stigs.inf" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
+        Copy-Item -Path $Stigs -Destination "C:\Windows\System32\stigs.inf" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
         Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\Sysmon.exe" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
         Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
         Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
