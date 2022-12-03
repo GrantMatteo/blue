@@ -21,6 +21,10 @@ function Invoke-SecureBaseline {
         $IIS = $true
         Import-Module WebAdministration
     }
+    $Exchange = $false
+    if (Get-Service -Name MSExchangeFastSearch) {
+        $Exchange = $true
+    }
 
     ######### SMB #########
     reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" /v SMB1 /t REG_DWORD /d 0 /f | Out-Null
@@ -221,12 +225,14 @@ function Invoke-SecureBaseline {
     }
 
     if ($IIS) {
-        foreach ($app in (Get-ChildItem IIS:\AppPools)) {
-            C:\Windows\System32\inetsrv\appcmd.exe set config -section:system.applicationHost/applicationPools "/[name='$($app.name)'].processModel.identityType:`"ApplicationPoolIdentity`"" /commit:apphost
-        }            
-        foreach ($site in (Get-ChildItem IIS:\Sites)) {
-            C:\Windows\System32\inetsrv\appcmd.exe set config $site.name -section:system.webServer/directoryBrowse /enabled:"False"
-            C:\Windows\System32\inetsrv\appcmd.exe set config $site.name -section:system.webServer/serverRuntime /authenticatedUserOverride:"UseAuthenticatedUser"  /commit:apphost
+        if (!($Exchange)) {
+            foreach ($app in (Get-ChildItem IIS:\AppPools)) {
+                C:\Windows\System32\inetsrv\appcmd.exe set config -section:system.applicationHost/applicationPools "/[name='$($app.name)'].processModel.identityType:`"ApplicationPoolIdentity`"" /commit:apphost
+            }            
+            foreach ($site in (Get-ChildItem IIS:\Sites)) {
+                C:\Windows\System32\inetsrv\appcmd.exe set config $site.name -section:system.webServer/directoryBrowse /enabled:"False"
+                C:\Windows\System32\inetsrv\appcmd.exe set config $site.name -section:system.webServer/serverRuntime /authenticatedUserOverride:"UseAuthenticatedUser"  /commit:apphost
+            }
         }
     }
     net stop spooler | Out-Null
