@@ -8,7 +8,7 @@ function New-HostCard {
         [String] $System
     )
         if($null -eq (Get-TrelloBoard -Name $Board)) {
-            Write-Host "A board with the name $BoardName does not exist, Invoke-CreateBoard to create a new board" 
+            Write-Host "A board with the name $BoardName does not exist, New-HostCard to create a new board" 
         }
         else {
             $password = Read-Host "Enter a new password"
