@@ -8,7 +8,7 @@ function Test-WinRM {
         }
         catch {
             $Denied += $Computer
-            Write-Host "[Info] Failed to copy to $Computer" -ForegroundColor Red
+            Write-Host "[ERROR] Failed: $Computer" -ForegroundColor Red
         }
     }
 }
