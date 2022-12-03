@@ -38,11 +38,6 @@ function Invoke-SecureBaseline {
     net share C$ /delete | Out-Null
     net share ADMIN$ /delete | Out-Null
     Write-Host "$env:ComputerName: SMB shares deleted and settings applied" -ForegroundColor Green
-    ######### Reset Policies #########
-    Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse | Out-Null
-    Remove-Item C:\Windows\System32\GroupPolicy* -Recurse -Force | Out-Null
-    gpupdate /force
-    Write-Host "$env:ComputerName: Group Policy reset" -ForegroundColor Green
 
     ######### User Auditing #########
     Add-Type -AssemblyName System.Web
@@ -85,6 +80,12 @@ function Invoke-SecureBaseline {
     Start-Sleep -Seconds 2
     Unregister-ScheduledTask -TaskName "Trello" -Confirm:$false
     Write-Host "$env:ComputerName: Trello automation completed" -ForegroundColor Green
+
+    ######### Reset Policies #########
+    Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse | Out-Null
+    Remove-Item C:\Windows\System32\GroupPolicy* -Recurse -Force | Out-Null
+    gpupdate /force
+    Write-Host "$env:ComputerName: Group Policy reset" -ForegroundColor Green
 
     ######### PTH Mitigation #########
     # Disable storage of the LM hash for passwords less than 15 characters
