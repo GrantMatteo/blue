@@ -76,13 +76,17 @@ function Invoke-SecureBaseline {
         Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black
     }
 
+    Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
     $action = New-ScheduledTaskAction -Execute 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -Argument "-NoProfile -file 'C:\Program Files\TrelloAutomation\TrelloAutomation.ps1' -ArgumentList '$p', '$p2'"
-
     # Try without trigger
-    $trigger =  New-ScheduledTaskTrigger -Daily -At 2am
-    Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Trello"
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    $principal  = New-ScheduledTaskPrincipal -UserId (Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -expand UserName) -LogonType Password -RunLevel Highest
+    $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal
+    Register-ScheduledTask -TaskName "Trello" -InputObject $task
     Start-ScheduledTask -TaskName "Trello"
-    
+    Start-Sleep -Seconds 5
+    Unregister-ScheduledTask -TaskName "Trello" -Confirm:$false
+
     Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
     powershell.exe -file "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1" -p $p -p2 $p2 | Out-Null
 
