@@ -9,7 +9,10 @@ netsh advfirewall set allprofiles logging allowedconnections enable
 
 netsh advfirewall set allprofiles state on
 netsh advfirewall set allprofiles firewallpolicy "blockinboundalways,allowoutbound"
-netsh.exe advfirewall firewall add rule name="RDP" dir=in action=allow program="$env:SystemRoot\system32\svchost.exe" service="TermService" enable=yes profile=private,domain localport=3389 protocol=tcp
+netsh advfirewall firewall add rule name="RDP" dir=in action=allow program="$env:SystemRoot\system32\svchost.exe" service="TermService" enable=yes profile=any localport=3389 protocol=tcp
+netsh advfirewall firewall add rule name="SSH" dir=in action=allow enable=yes profile=any localport=22 protocol=tcp
+netsh advfirewall firewall add rule name="WinRM" dir=in action=allow enable=yes profile=any localport=5985 protocol=tcp remoteip=localsubnet
+
 
 netsh a s a state off
 

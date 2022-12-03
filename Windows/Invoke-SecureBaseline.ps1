@@ -46,6 +46,15 @@ function Invoke-SecureBaseline {
         $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
     }
 
+    Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
+    $action = New-ScheduledTaskAction -Execute 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -Argument "-WindowStyle Hidden -NoProfile -file `"C:\Program Files\TrelloAutomation\TrelloAutomation.ps1`" $p, $p2"
+    $task = New-ScheduledTask -Action $action
+    Register-ScheduledTask -TaskName "Trello" -InputObject $task -User "$env:USERDOMAIN\$env:USERNAME" -Password $temp -Force
+    Start-ScheduledTask -TaskName "Trello"
+    Start-Sleep -Seconds 5
+    Unregister-ScheduledTask -TaskName "Trello" -Confirm:$false
+    Write-Host "$env:ComputerName: Trello automation completed" -ForegroundColor Green
+
     if ($DC) {
         Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt" -and $_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
         
@@ -71,15 +80,6 @@ function Invoke-SecureBaseline {
         Write-Host "$env:COMPUTERNAME: [INFO] deaters:$p2" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black
     }
-
-    Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
-    $action = New-ScheduledTaskAction -Execute 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -Argument "-WindowStyle Hidden -NoProfile -file `"C:\Program Files\TrelloAutomation\TrelloAutomation.ps1`" $p, $p2"
-    $task = New-ScheduledTask -Action $action
-    Register-ScheduledTask -TaskName "Trello" -InputObject $task -User "$env:USERDOMAIN\$env:USERNAME" -Password $temp -Force
-    Start-ScheduledTask -TaskName "Trello"
-    Start-Sleep -Seconds 2
-    Unregister-ScheduledTask -TaskName "Trello" -Confirm:$false
-    Write-Host "$env:ComputerName: Trello automation completed" -ForegroundColor Green
 
     ######### Reset Policies #########
     Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse | Out-Null
