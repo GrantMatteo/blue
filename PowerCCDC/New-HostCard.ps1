@@ -42,7 +42,6 @@ password: $password
                 $outbound = netstat -tupwn | grep -E 'tcp|udp' | awk '{print $5,$7}'
                 $inbound = netstat -tulpen | grep -E 'tcp|udp' | awk '{print $4,$9}'
                 foreach ($user in $users){Get-TrelloCardChecklist -card $BoxCard | Where-Object {$_.name -eq 'users'} | New-TrelloCardChecklistItem -Name $user}
-                foreach ($service in $services){Get-TrelloCardChecklist -card $BoxCard | Where-Object {$_.name -eq 'services'} |  New-TrelloCardChecklistItem -Name $service}
                 foreach ($connection in $outbound){Get-TrelloCardChecklist -card $BoxCard | Where-Object {$_.name -eq 'inbound'} | New-TrelloCardChecklistItem -Name $connection}
                 foreach ($connection in $inbound){Get-TrelloCardChecklist -card $BoxCard | Where-Object {$_.name -eq 'outbound'} | New-TrelloCardChecklistItem -Name $connection}
 
