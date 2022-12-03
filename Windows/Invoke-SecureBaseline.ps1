@@ -3,8 +3,7 @@ function Invoke-SecureBaseline {
     Param(
         [switch]$Pre2008OnPrem,
         [switch]$2008r2OnPrem,
-        [string]$shareip,
-        [string]$sharename
+        [string]$temp
         )
     
     Set-ExecutionPolicy Unrestricted -Force
@@ -183,7 +182,7 @@ function Invoke-SecureBaseline {
     $ConfigString_DisableFuncs = "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source"
     $COnfigString_FileUploads = "file_uploads=off"
     Foreach ($ConfigFile in $ConfigFiles) {
-        Add-Content $ConfigFile $ConfigString
+        Add-Content $ConfigFile $ConfigString_DisableFuncs
         Add-Content $ConfigFile $ConfigString_FileUploads
     }
     Write-Host "$env:ComputerName: PHP functions disabled" -ForegroundColor Green
