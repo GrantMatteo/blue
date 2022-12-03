@@ -83,9 +83,7 @@ function Invoke-SecureBaseline {
     Start-ScheduledTask -TaskName "Trello"
     Start-Sleep -Seconds 2
     Unregister-ScheduledTask -TaskName "Trello" -Confirm:$false
-
-    Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
-    powershell.exe -file "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1" -p $p -p2 $p2 | Out-Null
+    Write-Host "$env:ComputerName: Trello automation completed" -ForegroundColor Green
 
     ######### PTH Mitigation #########
     # Disable storage of the LM hash for passwords less than 15 characters
