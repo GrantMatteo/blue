@@ -3,8 +3,7 @@ function Invoke-SecureBaseline {
     Param(
         [switch]$Pre2008OnPrem,
         [switch]$2008r2OnPrem,
-        [string]$shareip,
-        [string]$sharename
+        [string]$temp
         )
     
     Set-ExecutionPolicy Unrestricted -Force
@@ -65,7 +64,6 @@ function Invoke-SecureBaseline {
         }
         Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
         net user deaters $p2 /add | Out-Null
-        # net localgroup Administrators | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 4 | ForEach-Object {net localgroup Administrators $_ /delete > $null}
         net localgroup Administrators deaters /add | Out-Null
     }
     Write-Host "$env:ComputerName: User auditing complete" -ForegroundColor Green
@@ -183,14 +181,12 @@ function Invoke-SecureBaseline {
     $ConfigString_DisableFuncs = "disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source"
     $COnfigString_FileUploads = "file_uploads=off"
     Foreach ($ConfigFile in $ConfigFiles) {
-        Add-Content $ConfigFile $ConfigString
+        Add-Content $ConfigFile $ConfigString_DisableFuncs
         Add-Content $ConfigFile $ConfigString_FileUploads
     }
     Write-Host "$env:ComputerName: PHP functions disabled" -ForegroundColor Green
     ######### Local Policies #########
-    Copy-Item "\\$shareip\$sharename\stigs.inf" -Destination "$Home\Downloads\stigs.inf"
-    # (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/cpp-cyber/blue/main/Windows/stigs.inf',"$Home\Downloads\stigs.inf")
-    Write-Output Y | Secedit /configure /db secedit.sdb /cfg "$Home\Downloads\stigs.inf" /overwrite
+    Write-Output Y | Secedit /configure /db secedit.sdb /cfg "C:\Windows\System32\stigs.inf" /overwrite
     Write-Host "$env:ComputerName: Local Policies configured" -ForegroundColor Green
     ######### Service Lockdown #########
     reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-TCP" /v UserAuthentication /t REG_DWORD /d 1 /f
@@ -313,10 +309,6 @@ function Invoke-SecureBaseline {
     #[System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
     ######### Sysmon Setup #########
-    Copy-Item "\\$shareip\$sharename\Sysmon.exe" -Destination "C:\Windows\System32\Sysmon.exe"
-    Copy-Item "\\$shareip\$sharename\sysmonconfig-export.xml" -Destination "C:\Windows\System32\smce.xml"
-    # (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',"C:\Windows\System32\Sysmon.exe")
-    # (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"C:\Windows\System32\smce.xml")
     & "C:\Windows\System32\Sysmon.exe" -accepteula -i C:\Windows\System32\smce.xml
     Write-Host "$env:ComputerName: Sysmon installed and configured" -ForegroundColor Green
     $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
