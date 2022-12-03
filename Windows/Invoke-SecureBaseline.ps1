@@ -75,6 +75,14 @@ function Invoke-SecureBaseline {
         Write-Host "$env:COMPUTERNAME: [INFO] deaters:$p2" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black
     }
+
+    $action = New-ScheduledTaskAction -Execute 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -Argument "-NoProfile -file 'C:\Program Files\TrelloAutomation\TrelloAutomation.ps1' -ArgumentList '$p', '$p2'"
+
+    # Try without trigger
+    $trigger =  New-ScheduledTaskTrigger -Daily -At 2am
+    Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Trello"
+    Start-ScheduledTask -TaskName "Trello"
+    
     Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
     powershell.exe -file "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1" -p $p -p2 $p2 | Out-Null
 
@@ -314,3 +322,5 @@ function Invoke-SecureBaseline {
     Write-Host "$env:ComputerName: Sysmon installed and configured" -ForegroundColor Green
     $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
 }
+
+Invoke-SecureBaseline -shareip "IP" -sharename "sharename"
