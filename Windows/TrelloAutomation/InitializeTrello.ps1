@@ -4,8 +4,8 @@ $TrelloAPI = Read-Host -Prompt "Trello API Key (https://trello.com/app-key)"
 $TrelloAccessToken = Read-Host -Prompt "Trello Access Token"
 
 
-wget https://github.com/cpp-cyber/blue/archive/refs/heads/main.zip -UseBasicParsing -OutFile $env:ProgramFiles\blue.zip
-Expand-Archive $env:ProgramFiles\blue.zip -DestinationPath $env:ProgramFiles\blue\
+Invoke-WebRequest https://github.com/cpp-cyber/blue/archive/refs/heads/main.zip -UseBasicParsing -OutFile $env:ProgramFiles\blue.zip
+Expand-Archive $env:ProgramFiles\blue.zip -DestinationPath $env:ProgramFiles\blue\ -Force
 $TrelloPath = "$env:ProgramFiles\blue\blue-main\Windows\TrelloAutomation\"
 
 #$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select -expand hostname
@@ -17,6 +17,7 @@ foreach ($Computer in $Computers) {
     }
     catch {
         $Denied += $Computer
+        Write-Host "Failed to copy to $Computer" -ForegroundColor Red
     }
 }
 
