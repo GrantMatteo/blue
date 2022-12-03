@@ -107,7 +107,7 @@ $Keys = foreach ($item in $regPath) {
         }
     }
     catch{
-        Write-Host "**[$item]** No Values Found" -ForegroundColor Red
+        Write-Host "[INFO] $item Not Found" -ForegroundColor Yellow
     }
 }
 New-TrelloCardChecklist -Card $Card -Name RunKeys -Item $Keys.GetEnumerator().MessageData.Message
