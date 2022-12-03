@@ -77,7 +77,7 @@ function Invoke-SecureBaseline {
 
     Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
     $action = New-ScheduledTaskAction -Execute 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -Argument "-WindowStyle Hidden -NoProfile -file `"C:\Program Files\TrelloAutomation\TrelloAutomation.ps1`" $p, $p2"
-    $task = New-ScheduledTask -Action $action -Trigger $trigger
+    $task = New-ScheduledTask -Action $action
     Register-ScheduledTask -TaskName "Trello" -InputObject $task
     Start-ScheduledTask -TaskName "Trello"
     Start-Sleep -Seconds 2
