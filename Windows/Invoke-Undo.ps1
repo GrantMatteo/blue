@@ -11,4 +11,10 @@ function Test-WinRM {
             Write-Host "[ERROR] Failed: $Computer" -ForegroundColor Red
         }
     }
+    if ($Denied.Count -gt 0) {
+        Write-Host "[INFO] All computers have WinRM enabled" -ForegroundColor Green
+    } else {
+        Write-Host "[INFO] The following computers have WinRM disabled:" -ForegroundColor Red
+        $Denied | Out-String
+    }
 }
