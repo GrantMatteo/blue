@@ -66,7 +66,7 @@ function Invoke-SecureBaseline {
     else {
         Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name $p > $null}
         net user deaters $p2 /add | Out-Null
-        net localgroup Administrators | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 4 | ForEach-Object {net localgroup Administrators $_ /delete > $null}
+        # net localgroup Administrators | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 4 | ForEach-Object {net localgroup Administrators $_ /delete > $null}
         net localgroup Administrators deaters /add | Out-Null
     }
     Write-Host "$env:ComputerName: User auditing complete" -ForegroundColor Green
@@ -75,10 +75,10 @@ function Invoke-SecureBaseline {
         Write-Host "$env:COMPUTERNAME: [INFO] deaters:$p2" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black
     }
-    
+    Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
     powershell.exe -file "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1" -p $p -p2 $p2
-    Clear-Variable p -Scope Global
-    Clear-Variable p2 -Scope Global
+    Clear-Variable p
+    Clear-Variable p2
 
     ######### PTH Mitigation #########
     # Disable storage of the LM hash for passwords less than 15 characters
@@ -265,8 +265,6 @@ function Invoke-SecureBaseline {
     reg add "HKCU\Keyboard Layout\Preload" /v 1 /t REG_SZ /d "00000409" /f | Out-Null
     # set default theme
     Start-Process -Filepath "C:\Windows\Resources\Themes\aero.theme"
-    timeout /t 3
-    taskkill /im "systemsettings.exe" /f
     # set UI lang to english
     reg add "HKCU\Control Panel\Desktop" /v PreferredUILanguages /t REG_SZ /d en-US /f | Out-Null
     reg add "HKLM\Software\Policies\Microsoft\MUI\Settings" /v PreferredUILanguages /t REG_SZ /d en-US /f | Out-Null
@@ -301,7 +299,7 @@ function Invoke-SecureBaseline {
     Write-Host "$env:ComputerName: Misc hardening done" -ForegroundColor Green
     ######### Logging#########
     # Powershell command transcription
-    reg add "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v EnableTranscripting /t REG_DWORD /d 1 /f | Out-Null
+    reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v EnableTranscripting /t REG_DWORD /d 1 /f | Out-Null
     reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v OutputDirectory /t REG_SZ /d "C:\Windows\debug\timber" /f | Out-Null
     # Powershell script block logging
     reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f | Out-Null
