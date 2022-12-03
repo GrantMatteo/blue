@@ -76,9 +76,7 @@ function Invoke-SecureBaseline {
         Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black
     }
     Unblock-File "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1"
-    powershell.exe -file "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1" -p $p -p2 $p2
-    Clear-Variable p
-    Clear-Variable p2
+    powershell.exe -file "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1" -p $p -p2 $p2 | Out-Null
 
     ######### PTH Mitigation #########
     # Disable storage of the LM hash for passwords less than 15 characters
