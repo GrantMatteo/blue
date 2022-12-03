@@ -4,7 +4,7 @@ param(
 )
 
 #Hostname and IP
-$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select-Object -expand hostname
+$Hostname = hostname
 $IP = Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress | Where-Object IPAddress -NotLike '127.0.0.1' | Select-Object -ExpandProperty IPAddress
 $OS = (Get-WMIObject win32_operatingsystem).caption
 $DNSserver = Get-DnsClientServerAddress -InterfaceIndex (Get-NetAdapter | Select-Object -expand ifindex) | Where-Object ServerAddresses -inotmatch "::" | Select-Object -expand ServerAddresses

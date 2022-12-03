@@ -1,10 +1,6 @@
-$PortToApp = Get-NetTCPConnection | Select-Object -Property LocalPort,@{name='ProcessName';expression={(Get-Process -Id $_.OwningProcess). Path}},CreationTime
-
-$PortTable = @{}
-
-$PortToApp | ForEach-Object {$PortTable.Add($_.LocalPort, $_.ProcessName)}
-
+netsh advfirewall state allprofiles state off
 netsh advfirewall firewall delete rule all
+netsh 
 
 netsh advfirewall set allprofiles logging filename %systemroot%\System32\LogFiles\Firewall\pfirewall.log
 netsh advfirewall set allprofiles logging maxfilesize 16384
@@ -12,7 +8,8 @@ netsh advfirewall set allprofiles logging droppedconnections enable
 netsh advfirewall set allprofiles logging allowedconnections enable
 
 netsh advfirewall set allprofiles state on
-netsh advfirewall set allprofiles firewallpolicy blockinbound
+netsh advfirewall set allprofiles firewallpolicy "blockinboundalways,allowoutbound"
+netsh.exe advfirewall firewall add rule name="RDP" dir=in action=allow program="$env:SystemRoot\system32\svchost.exe" service="TermService" enable=yes profile=private,domain localport=3389 protocol=tcp
 
 netsh a s a state off
 

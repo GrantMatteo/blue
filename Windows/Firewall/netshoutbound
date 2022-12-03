@@ -6,7 +6,7 @@ netsh advfirewall set allprofiles logging droppedconnections enable
 netsh advfirewall set allprofiles logging allowedconnections enable
 
 netsh advfirewall set allprofiles state on
-netsh advfirewall set allprofiles firewallpolicy allowinbound,blockoutbound
+netsh advfirewall set allprofiles firewallpolicy "allowinbound,blockoutboundalways"
 
 netsh a s a state off
 
