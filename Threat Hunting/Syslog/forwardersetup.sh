@@ -13,7 +13,13 @@ else
     exit 1;
 fi
 
+SERVICE=$(which systemctl)
 
+if [[ ! -z systemctl ]]; then
+    systemctl start rsyslog
+else 
+    service rsyslog start
+fi
 
 grep -Prl 'general_log_file' /etc/ | xargs echo Enable SQL logging at
 
