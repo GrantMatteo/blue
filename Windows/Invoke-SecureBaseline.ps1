@@ -6,11 +6,13 @@ function Invoke-SecureBaseline {
         [string]$shareip,
         [string]$sharename
         )
+    
     Set-ExecutionPolicy Unrestricted -Force
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
     $Error.Clear()
     $ErrorActionPreference = "SilentlyContinue"
     $DC = $false
+    $OS = (Get-WMIObject win32_operatingsystem).caption
     if (Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'") {
         $DC = $true
         Import-Module ActiveDirectory
@@ -34,11 +36,12 @@ function Invoke-SecureBaseline {
         reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoShareServer /t REG_DWORD /d 0 /f
         reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoShareWks /t REG_DWORD /d 0 /f
     }
-
+    Write-Host "$env:ComputerName: SMB shares deleted and settings applied" -ForegroundColor Green
     ######### Reset Policies #########
     Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse 
     Remove-Item C:\Windows\System32\GroupPolicy* -Recurse -Force
     gpupdate /force
+    Write-Host "$env:ComputerName: Group Policy reset" -ForegroundColor Green
 
     ######### User Auditing #########
     Add-Type -AssemblyName System.Web
@@ -67,8 +70,14 @@ function Invoke-SecureBaseline {
     else {
         Get-WmiObject -class win32_useraccount | ForEach-Object {net user $_.name $p > $null}
         net user deaters $p2 /add
-        Get-WmiObject -class win32_useraccount | ForEach-Object {net localgroup administrators $_.name /delete}
-        net localgroup administrators deaters /add
+        net localgroup Administrators | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 4 | ForEach-Object {net localgroup Administrators $_ /delete > $null}
+        net localgroup Administrators deaters /add
+    }
+    Write-Host "$env:ComputerName: User auditing complete" -ForegroundColor Green
+
+    if ($OS -match  "ista|2008|2003|XP|xp|Xp|7") {
+        Write-Host "$env:COMPUTERNAME: [INFO] deaters:$p2" -ForegroundColor Green
+        Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Green
     }
     
     powershell.exe -file "$env:ProgramFiles\TrelloAutomation\TrelloAutomation.ps1" -p $p -p2 $p2
@@ -98,6 +107,8 @@ function Invoke-SecureBaseline {
     reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 1 /f
     # Enable LSASSS process auditing
     reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe" /v AuditLevel /t REG_DWORD /d 8 /f
+    Write-Host "$env:ComputerName: PTH Mitigation complete" -ForegroundColor Green
+
     ######### Defender #########
     #TODO: Hardcode all defender defaults
 
@@ -135,7 +146,7 @@ function Invoke-SecureBaseline {
         Add-MpPreference -AttackSurfaceReductionRules_Ids 7674BA52-37EB-4A4F-A9A1-F0F9A1619A2C -AttackSurfaceReductionRules_Actions Enabled
         # Block persistence through WMI event subscription
         Add-MpPreference -AttackSurfaceReductionRules_Ids E6DB77E5-3DF2-4CF1-B95A-636979351E5B -AttackSurfaceReductionRules_Actions Enabled
-        Write-Host "Defender Attack Surface Reduction rules enabled" -ForegroundColor Green
+        Write-Host "$env:ComputerName: Defender Attack Surface Reduction rules enabled" -ForegroundColor Green
         ForEach ($ExcludedExt in (Get-MpPreference).ExclusionExtension) {
             Remove-MpPreference -ExclusionExtension $ExcludedExt
         }
@@ -151,13 +162,13 @@ function Invoke-SecureBaseline {
         ForEach ($ExcludedASR in (Get-MpPreference).AttackSurfaceReductionOnlyExclusions) {
             Remove-MpPreference -AttackSurfaceReductionOnlyExclusions $ExcludedASR
         }
-        Write-Host "Defender exclusions removed" -ForegroundColor Green
+        Write-Host "$env:ComputerName: Defender exclusions removed" -ForegroundColor Green
     }
     catch [System.Management.Automation.CommandNotFoundException] {
-        Write-Host "[INFO] Old defender version detected, skipping ASR rules" -ForegroundColor Yellow
+        Write-Host "$env:ComputerName: [INFO] Old defender version detected, skipping ASR rules" -ForegroundColor Yellow
     }
     catch {
-        Write-Host "[ERROR] man wtf goin on over here with defender ASR" -ForegroundColor Red
+        Write-Host "$env:ComputerName: [ERROR] man wtf goin on over here with defender ASR" -ForegroundColor Red
     }
     ######### Disable PHP Functions #########
     $php = Get-ChildItem C:\ php.exe -recurse -ErrorAction SilentlyContinue | ForEach-Object {& $_.FullName --ini | Out-String}
@@ -174,12 +185,12 @@ function Invoke-SecureBaseline {
     Foreach ($ConfigFile in $ConfigFiles) {
         Add-Content $ConfigFile $ConfigString
     }
-    Write-Host "PHP functions disabled" -ForegroundColor Green
+    Write-Host "$env:ComputerName: PHP functions disabled" -ForegroundColor Green
     ######### Local Policies #########
     Copy-Item "\\$shareip\$sharename\stigs.inf" -Destination "$Home\Downloads\stigs.inf"
     # (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/cpp-cyber/blue/main/Windows/stigs.inf',"$Home\Downloads\stigs.inf")
     Write-Output Y | Secedit /configure /db secedit.sdb /cfg "$Home\Downloads\stigs.inf" /overwrite
-    Write-Host "Local Policies configured" -ForegroundColor Green
+    Write-Host "$env:ComputerName: Local Policies configured" -ForegroundColor Green
     ######### Service Lockdown #########
     reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-TCP" /v UserAuthentication /t REG_DWORD /d 1 /f
     if ($DC) {
@@ -223,7 +234,7 @@ function Invoke-SecureBaseline {
     }
     net stop spooler
     sc.exe config spooler start=disabled
-    Write-Host "Services lockdown" -ForegroundColor Green
+    Write-Host "$env:ComputerName: Services locked down" -ForegroundColor Green
     ######### Misc #########
     # set font reg keys
     reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI (TrueType)" /t REG_SZ /d "segoeui.ttf" /f
@@ -263,7 +274,7 @@ function Invoke-SecureBaseline {
     # set UI lang to english
     reg add "HKCU\Control Panel\Desktop" /v PreferredUILanguages /t REG_SZ /d en-US /f
     reg add "HKLM\Software\Policies\Microsoft\MUI\Settings" /v PreferredUILanguages /t REG_SZ /d en-US /f
-    Write-Host "Font, Themes, and Languages set to default" -ForegroundColor Green
+    Write-Host "$env:ComputerName: Font, Themes, and Languages set to default" -ForegroundColor Green
 
     # CVE-2021-34527 (PrintNightmare)
     reg add "HKLM\Software\Policies\Microsoft\Windows NT\Printers" /v RegisterSpoolerRemoteRpcEndPoint /t REG_DWORD /d 2 /f
@@ -291,14 +302,14 @@ function Invoke-SecureBaseline {
     reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanManServer\Parameters" /v RestrictNullSessAccess /t REG_DWORD /d 1 /f
     reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v NullSessionPipes /t REG_MULTI_SZ /f
     reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v NullSessionShares /t REG_MULTI_SZ /f
-    Write-Host "Misc hardening done" -ForegroundColor Green
+    Write-Host "$env:ComputerName: Misc hardening done" -ForegroundColor Green
     ######### Logging#########
     # Powershell command transcription
     reg add "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v EnableTranscripting /t REG_DWORD /d 1 /f
     reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v OutputDirectory /t REG_SZ /d "C:\Windows\debug\timber" /f
     # Powershell script block logging
     reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
-    Write-Host "Powershell Logging enabled" -ForegroundColor Green
+    Write-Host "$env:ComputerName: Powershell Logging enabled" -ForegroundColor Green
     ######### Constrained Language Mode #########
     #[System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
@@ -308,8 +319,6 @@ function Invoke-SecureBaseline {
     # (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon.exe',"C:\Windows\System32\Sysmon.exe")
     # (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml',"C:\Windows\System32\smce.xml")
     & "C:\Windows\System32\sysmon.exe" -accepteula -i C:\Windows\System32\smce.xml
-    Write-Host "Sysmon installed and configured" -ForegroundColor Green
+    Write-Host "$env:ComputerName: Sysmon installed and configured" -ForegroundColor Green
     $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
 }
-
-Invoke-SecureBaseline
