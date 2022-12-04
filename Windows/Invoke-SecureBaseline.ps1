@@ -226,6 +226,7 @@ function Invoke-SecureBaseline {
     }
 
     if ($IIS) {
+        <#
         if (!($Exchange)) {
             foreach ($app in (Get-ChildItem IIS:\AppPools)) {
                 C:\Windows\System32\inetsrv\appcmd.exe set config -section:system.applicationHost/applicationPools "/[name='$($app.name)'].processModel.identityType:`"ApplicationPoolIdentity`"" /commit:apphost
@@ -235,6 +236,7 @@ function Invoke-SecureBaseline {
                 C:\Windows\System32\inetsrv\appcmd.exe set config $site.name -section:system.webServer/serverRuntime /authenticatedUserOverride:"UseAuthenticatedUser"  /commit:apphost
             }
         }
+        #>
     }
     net stop spooler | Out-Null
     sc.exe config spooler start=disabled | Out-Null
