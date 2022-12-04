@@ -40,7 +40,7 @@ cat << EOF > /etc/rsyslog.conf
 \$InputFileTag auth_log
 \$InputFileSeverity info
 \$InputFileFacility local1
-\$InputFileRunMonitor
+\$InputRunFileMonitor
 
 # Ubuntu Apache2
 \$InputFileName /var/log/apache2/access.log
@@ -48,7 +48,7 @@ cat << EOF > /etc/rsyslog.conf
 \$InputFileTag access_log
 \$InputFileSeverity info
 \$InputFileFacility local2
-\$InputFileRunMonitor
+\$InputRunFileMonitor
 
 # RHEL Apache2
 \$InputFileName /var/log/httpd/access_log
@@ -56,7 +56,7 @@ cat << EOF > /etc/rsyslog.conf
 \$InputFileTag access_log
 \$InputFileSeverity info
 \$InputFileFacility local2
-\$InputFileRunMonitor
+\$InputRunFileMonitor
 
 # Nginx
 \$InputFileName /var/log/nginx/access.log
@@ -64,7 +64,7 @@ cat << EOF > /etc/rsyslog.conf
 \$InputFileTag access_log
 \$InputFileSeverity info
 \$InputFileFacility local2
-\$InputFileRunMonitor
+\$InputRunFileMonitor
 
 # Honeypot logging (thepot.sh)
 \$InputFileName /var/log/honeypot
@@ -72,7 +72,7 @@ cat << EOF > /etc/rsyslog.conf
 \$InputFileTag honeypot
 \$InputFileSeverity info
 \$InputFileFacility local3
-\$InputFileRunMonitor
+\$InputRunFileMonitor
 
 # MySQL logging
 \$InputFileName /var/log/mysql/mysql.log
@@ -80,7 +80,7 @@ cat << EOF > /etc/rsyslog.conf
 \$InputFileTag database
 \$InputFileSeverity info
 \$InputFileFacility local4
-\$InputFileRunMonitor
+\$InputRunFileMonitor
 
 *.* @$IP:514
 EOF
