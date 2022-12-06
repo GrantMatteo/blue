@@ -4,21 +4,26 @@ YUM_CMD=$(which yum)
 APT_GET_CMD=$(which apt-get)
 
 if [[ ! -z $YUM_CMD ]]; then
-    yum install rsyslog audit -y 
+    yum install rsyslog audit curl -y 
 elif [[ ! -z $APT_GET_CMD ]]; then
     apt-get update
-    apt-get install rsyslog auditd -y 
+    apt-get install rsyslog auditd curl -y 
 else
     echo "Installation Failed"
     exit 1;
 fi
 
+curl https://raw.githubusercontent.com/Neo23x0/auditd/master/audit.rules > /etc/audit/audit.rules
+cat /etc/audit/audit.rules > /etc/audit/rules.d/audit.rules
+
 SERVICE=$(which systemctl)
 
 if [[ ! -z systemctl ]]; then
-    systemctl start rsyslog
+    systemctl restart rsyslog
+    systemctl restart auditd
 else 
-    service rsyslog start
+    service rsyslog restart
+    service auditd restart
 fi
 
 grep -Prl 'general_log_file' /etc/ | xargs echo Enable SQL logging at
