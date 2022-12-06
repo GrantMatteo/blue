@@ -4,10 +4,10 @@ YUM_CMD=$(which yum)
 APT_GET_CMD=$(which apt-get)
 
 if [[ ! -z $YUM_CMD ]]; then
-    yum install rsyslog -y 
+    yum install rsyslog audit -y 
 elif [[ ! -z $APT_GET_CMD ]]; then
     apt-get update
-    apt-get install rsyslog -y 
+    apt-get install rsyslog auditd -y 
 else
     echo "Installation Failed"
     exit 1;
@@ -80,6 +80,14 @@ cat << EOF > /etc/rsyslog.conf
 \$InputFileTag database
 \$InputFileSeverity info
 \$InputFileFacility local4
+\$InputRunFileMonitor
+
+# AuditDeez
+\$InputFileName /var/log/audit/audit.log
+\$InputFileStateFile audit
+\$InputFileTag audit
+\$InputFileSeverity info
+\$InputFileFacility local5
 \$InputRunFileMonitor
 
 *.* @$IP:514
