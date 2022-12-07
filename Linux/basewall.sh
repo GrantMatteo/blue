@@ -19,7 +19,7 @@ $ipt -A OUTPUT -d 127.0.0.1,$LOCALNETWORK -m conntrack --ctstate NEW -j ACCEPT
 $ipt -A INPUT -p udp --dport 53 -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
 $ipt -A OUTPUT -p udp --dport 53 -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
 
-# Drop Output, but still allow new inbound
-$ipt -P FORWARD DROP; $ipt -P OUTPUT DROP;
+# Drop Output, but still allow new inbound. Allow forward for docker
+$ipt -P FORWARD ACCEPT; $ipt -P OUTPUT DROP;
 
 iptables-save > /opt/rules.v4
