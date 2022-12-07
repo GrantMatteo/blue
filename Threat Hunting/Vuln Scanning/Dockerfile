@@ -10,7 +10,7 @@ RUN apt-get update && \
     postgresql-contrib postgresql-client libpq-dev \
     libapr1 libaprutil1 libsvn1 \
     libpcap-dev libsqlite3-dev libgmp3-dev \
-    nasm vim nmap ntpdate sudo
+    nasm vim nmap ntpdate sudo golang
 
 RUN curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > /opt/msfinstall && chmod 755 /opt/msfinstall && /opt/msfinstall
 
