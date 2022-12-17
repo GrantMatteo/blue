@@ -3,7 +3,7 @@
 YUM_CMD=$(which yum)
 APT_GET_CMD=$(which apt-get)
 
-read "IP: " IP
+read -p "IP: " IP
 
 if [[ ! -z $YUM_CMD ]]; then
     yum install rsyslog audit curl -y 
