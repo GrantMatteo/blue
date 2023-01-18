@@ -49,17 +49,13 @@ $CommentString = if ($DC) {
     Get-WmiObject win32_useraccount | ForEach-Object {$_.Name}
 }
 
-
-
 #Network Connections
 #$NetworkConnections = Get-NetTCPConnection -State Listen,Established | where-object {($_.RemotePort -ne 443) -and ($_.LocalPort -ne 5985) -and ($_.LocalAddress -inotmatch '::' )}| sort-object state,localport | Select-Object localaddress,localport,remoteaddress,remoteport,@{'Name' = 'ProcessName';'Expression'={(Get-Process -Id $_.OwningProcess).Name}}
 #New-TrelloCardChecklist -Card $Card -Name Connections -Item $NetworkConnections
 
-# TODO: Review below to check if Get-WindowsOptionalFeature is better
 #Windows Features
 if(Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2' or ProductType='3'") {
-    $Features = Get-WindowsFeature | Where-Object Installed | Select-Object -expand name | Out-String
-    New-TrelloCardComment -Card $Card -Comment $Features
+    Get-WindowsOptionalFeature -Online | Where-Object state | Select-Object FeatureName
 }
 
 #Installed Programs
