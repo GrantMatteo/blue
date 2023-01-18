@@ -59,21 +59,13 @@ if(Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='
 }
 
 #Installed Programs
-$LMPrograms = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
-$LMPrograms = foreach ($obj in $LMPrograms) { 
-    if (($null -NE $obj.GetValue('DisplayName')) -and ($obj.GetValue('DisplayName') -notlike "*Microsoft Visual C++*")) { 
-        $obj.GetValue('DisplayName') + '-' + $obj.GetValue('DisplayVersion')
-    }
-}
-$CUPrograms = Get-ChildItem "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
-$CUPrograms = foreach ($obj in $CUPrograms) { 
-    if (($null -NE $obj.GetValue('DisplayName')) -and ($obj.GetValue('DisplayName') -notlike "*Microsoft Visual C++*")) { 
-        $obj.GetValue('DisplayName') + '-' + $obj.GetValue('DisplayVersion')
-    }
-}
 
-New-TrelloCardChecklist -Card $Card -Name Programs -Item $LMPrograms
-New-TrelloCardChecklist -Card $Card -Name Programs -Item $CUPrograms
+Write-Host "#### Installed Programs ####" -ForegroundColor Cyan
+$InstalledSoftware = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
+foreach($obj in $InstalledSoftware){write-host $obj.GetValue('DisplayName') -NoNewline; write-host " - " -NoNewline; write-host $obj.GetValue('DisplayVersion')}
+
+$InstalledSoftware = Get-ChildItem "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
+foreach($obj in $InstalledSoftware){write-host $obj.GetValue('DisplayName') -NoNewline; write-host " - " -NoNewline; write-host $obj.GetValue('DisplayVersion')}
 
 #RunKeys
 $regPath = @("HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 
