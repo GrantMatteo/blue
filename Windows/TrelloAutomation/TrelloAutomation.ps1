@@ -54,9 +54,8 @@ $CommentString = if ($DC) {
 #New-TrelloCardChecklist -Card $Card -Name Connections -Item $NetworkConnections
 
 #Windows Features
-if(Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2' or ProductType='3'") {
-    Get-WindowsOptionalFeature -Online | Where-Object state | Select-Object FeatureName
-}
+Write-Host "#### Features ####" -ForegroundColor Cyan
+Get-WindowsOptionalFeature -Online | Where-Object state | Select-Object FeatureName
 
 #Installed Programs
 
@@ -68,6 +67,7 @@ $InstalledSoftware = Get-ChildItem "HKCU:\Software\Microsoft\Windows\CurrentVers
 foreach($obj in $InstalledSoftware){write-host $obj.GetValue('DisplayName') -NoNewline; write-host " - " -NoNewline; write-host $obj.GetValue('DisplayVersion')}
 
 #RunKeys
+Write-Host "#### Registry Startups ####" -ForegroundColor Cyan
 $regPath = @("HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 
             "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnceEx", 
             "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce", 
@@ -83,43 +83,38 @@ $regPath = @("HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
             "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit", 
             "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell", 
             "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Windows")
-$Keys = foreach ($item in $regPath) {
+foreach ($item in $regPath) {
     try{
-        $reg = Get-ItemProperty -Path $item -ErrorAction Stop
-        Write-Host "[Startups: Registry Path] **$item**" -ForegroundColor Green 6>&1
-        $reg | Get-Member -MemberType NoteProperty -ErrorAction Stop | Select-Object -Expand Name | ForEach-Object {
+        $reg = Get-ItemProperty -Path $item -ErrorAction SilentlyContinue
+        Write-Host "[Registry Startups] $item" -ForegroundColor Cyan 
+        $reg | Get-Member -MemberType NoteProperty -ErrorAction SilentlyContinue | Select-Object -Expand Name | ForEach-Object {
             if ($_.StartsWith("PS") -or $_.StartsWith("VM")) {
                 # Write-Host "[Startups: Registry Values] Default value detected"
             }
             else {
-                Write-Host "[$_] $($reg.$_)" -ForegroundColor Yellow 6>&1
+                Write-Host "[$_] $($reg.$_)" -ForegroundColor Cyan
             }
         }
     }
     catch{
-        Write-Host "[INFO] $item Not Found" -ForegroundColor Yellow
+        Write-Host "[Registry Startup] $item Not Found" -ForegroundColor Yellow
     }
 }
-New-TrelloCardChecklist -Card $Card -Name RunKeys -Item $Keys.GetEnumerator().MessageData.Message
+
 
 
 #Scheduled Tasks
+Write-Host "#### Scheduled Tasks ####" -ForegroundColor Cyan
 $tasks = Get-ScheduledTask | Where-Object { $_.Author -like '*\*' -and $_.Author -notlike '*.exe*' -and $_.Author -notlike '*.dll*' } 
-$TaskOut = foreach ($task in $tasks) {
+foreach ($task in $tasks) {
     $author = $task.Author
     $taskname = $task.TaskName
     $taskpath = $task.TaskPath
     $taskfile = (Get-ScheduledTask $taskname).actions.Execute
     $taskargs = (Get-ScheduledTask $taskname).actions.Arguments
-    Write-Host "[Startups: Scheduled Task] Path: "**$taskpath$taskname**" Author: "$author" Running file: "**$taskfile**" Arguments: "**$taskargs**"" -ForegroundColor Yellow 6>&1
-}
-if ( $null -eq $tasks ) {
-    $TaskOut = Write-Host "[Startups: Scheduled Tasks] No tasks detected..." -ForegroundColor Red 6>&1
-    New-TrelloCardChecklist -Card $Card -Name ScheduledTasks -Item $TaskOut.MessageData.Message
-} else {
-New-TrelloCardChecklist -Card $Card -Name ScheduledTasks -Item $TaskOut.GetEnumerator().MessageData.Message
+    Write-Host "[Scheduled Task] Path: "$taskpath$taskname" Author: "$author" Running file: "$taskfile" Arguments: "$taskargs"" -ForegroundColor Cyan
 }
 
 #SMB Shares
-$Shares = Get-WmiObject -Class Win32_Share | Select-Object -ExpandProperty Name,Path | Out-String
-New-TrelloCardComment -Card $Card -Comment $Shares
+Write-Host "#### SMB Shares ####" -ForegroundColor Cyan
+Get-WmiObject -Class Win32_Share | Select-Object Name,Path
