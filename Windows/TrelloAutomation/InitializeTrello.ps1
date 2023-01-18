@@ -52,10 +52,10 @@ $ManualWork = New-TrelloCard -ListId $WindowsList -Name "Rejected Windows Boxes"
 New-TrelloCardChecklist -Card $ManualWork -Name Hosts -Item $Denied
 New-TrelloCardChecklist -Card $BoxTemplateCard -Name Baselining -Item @('Inventory', 'Change Default Passwords', 'Configure Log Forwarding')
 
-Invoke-Command $WinRMable -ScriptBlock {
+#Invoke-Command $WinRMable -ScriptBlock {
     #[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     #Install-Module PowerTrello -Scope AllUsers -Confirm:$false -Force
     #Set-TrelloConfiguration -ApiKey $Using:TrelloAPI -AccessToken $Using:TrelloAccessToken
     #New-HostCard -BoardID $Using:BoardID -System 'Windows' -User 'Tanay'
-}
+#}
 #test

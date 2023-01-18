@@ -1,53 +1,54 @@
 #Hostname and IP
-$Hostname = hostname
-$IP = Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress | Where-Object IPAddress -NotLike '127.0.0.1' | Select-Object -ExpandProperty IPAddress
-$OS = (Get-WMIObject win32_operatingsystem).caption
-$DNSserver = Get-DnsClientServerAddress -InterfaceIndex (Get-NetAdapter | Select-Object -expand ifindex) | Where-Object ServerAddresses -inotmatch "::" | Select-Object -expand ServerAddresses
-$BoardID = Get-TrelloBoard -Name CCDC | Select-Object -Expand id
+Write-Host "#### Hostname ####" -ForegroundColor Cyan
+Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object Name, Domain
 
-$Description = "# System Information:
-## Operating System: $OS
-## Admin User
-username: $(whoami)
-## Other Details:
-###DNS Server(s): $DNSserver"
+Write-Host "#### IP ####" -ForegroundColor Cyan
+Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress, InterfaceAlias | Where-Object IPAddress -NotLike '127.0.0.1'
 
-$ListID = Get-TrelloList -BoardId $BoardID | Where-Object name -eq 'Windows' | Select-Object -expand id
+Write-Host "#### Admin ####" -ForegroundColor Cyan
+whoami.exe
 
-$CardName = "Hostname [IP]"
-$CardName = $CardName -Replace "Hostname", $Hostname
-$CardName = $CardName -Replace "IP", $IP
-$Card = New-TrelloCard -Name $CardName -Description $Description -ListId $ListID
+Write-Host "#### OS ####" -ForegroundColor Cyan
+(Get-WMIObject win32_operatingsystem).caption
 
+Write-Host "#### DNS Servers ####" -ForegroundColor Cyan
+Get-DnsClientServerAddress -InterfaceIndex (Get-NetAdapter | Select-Object -expand ifindex) | Where-Object ServerAddresses -inotmatch "::" | Select-Object -expand ServerAddresses
+
+$DC = Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'"
+if ($DC) {
+    Write-Host "#### DC Detected ####" -ForegroundColor Cyan
+}
 
 #Users and Groups
-$CommentString = if (Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'") {
-    $Groups = Get-AdGroup -Filter 'SamAccountName -NotLike "Domain Users" -and SamAccountName -NotLike "Domain Admins"' | Select-Object -ExpandProperty Name
+$CommentString = if ($DC) {
+    $Groups = Get-AdGroup -Filter 'SamAccountName -NotLike "Domain Users"' | Select-Object -ExpandProperty Name
     $Groups | ForEach-Object {
         $Users = Get-ADGroupMember -Identity $_ | Select-Object -ExpandProperty Name
         if ($Users.Count -gt 0) {
             $Users = $Users | Out-String
-            Write-Host "**Group: $_**" 6>&1
+            Write-Host "Group: $_" 6>&1
             Write-Host "$Users" 6>&1
             
         }
     }
-    $Users = Get-ADUser -filter * | Select-Object -ExpandProperty Name | Out-String
+    Write-Host "#### ALL Domain Users ####" -ForegroundColor Cyan
+    Get-ADUser -filter * | Select-Object -ExpandProperty Name | Out-String
 } else {
-    $Groups = Get-LocalGroup | Select-Object -ExpandProperty name
+    $Groups = net localgroup | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 2
+    $Groups = $Groups -replace '\*',''
     $Groups | ForEach-Object {
-        $Users = Get-LocalGroupMember -Name $_ | Select-Object -ExpandProperty name
+        # TODO: Test to make sure $_ references correct var
+        $Users = net localgroup $_ | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 4
         if ($Users.Count -gt 0) {
             $Users = $Users | Out-String
-            Write-Host "**Group: $_**" 6>&1
+            Write-Host "Group: $_" 6>&1
             Write-Host "$Users" 6>&1
         }
     }
-    $Users = Get-LocalUser | Select-Object -expand name | Out-String
+    Write-Host "#### ALL Users ####" -ForegroundColor Cyan
+    Get-WmiObject win32_useraccount | ForEach-Object {$_.Name}
 }
 
-New-TrelloCardComment -Card $Card -Comment $Users
-New-TrelloCardComment -Card $Card -Comment ($CommentString | Out-String)
 
 
 #Network Connections
