@@ -31,7 +31,7 @@ $ipt -A OUTPUT -p udp --dport 53 -m conntrack -s 127.0.0.1,$LOCALNETWORK -j ACCE
 #$ipt -A INPUT -p udp --dport 53 -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
 #$ipt -A OUTPUT -p udp --dport 53 -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
 
-# Finally, the danger line: drop any traffic that doesn't match.
-$ipt -P FORWARD DROP; $ipt -P OUTPUT DROP; $ipt -P INPUT DROP
+# Finally, the danger line: drop any traffic that doesn't match. Forward for docker
+$ipt -P FORWARD ACCEPT; $ipt -P OUTPUT DROP; $ipt -P INPUT DROP
 
 iptables-save > /opt/rules.v4
