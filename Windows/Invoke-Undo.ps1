@@ -3,7 +3,7 @@ function Test-WinRM {
     $Denied = @()
     foreach ($Computer in $Computers) {
         try {
-            $session = New-PSSession -ComputerName $env:COMPUTERNAME
+            $session = New-PSSession -ComputerName $Computer
             $session | Remove-PSSession
         }
         catch {

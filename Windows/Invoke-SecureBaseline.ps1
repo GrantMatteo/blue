@@ -3,7 +3,6 @@ Set-ExecutionPolicy Unrestricted -Force
 $Error.Clear()
 $ErrorActionPreference = "SilentlyContinue"
 $DC = $false
-$OS = (Get-WMIObject win32_operatingsystem).caption
 if (Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'") {
     $DC = $true
     Import-Module ActiveDirectory
@@ -40,13 +39,12 @@ while ($p -match '[,;:|iIlLoO0]') {
 
 if ($DC) {
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt" -and $_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
-    
+    Write-Host "$env:COMPUTERNAME: [INFO] deaters:$p2" -ForegroundColor Magenta -BackgroundColor Black
     $ADUsers = Get-ADUser -Filter *
     $ADUsers | Set-ADUser -AllowReversiblePasswordEncryption 0 -PasswordNotRequired 0
-    Get-ADGroupMember -Identity "Administrators" | Where-Object {$_.name -ne "Domain Admins" -and $_.name -ne "Enterprise Admins" -and $_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Administrators" -Members $_.SamAccountName -confirm:$false}
-    Get-ADGroupMember -Identity "Domain Admins" | Where-Object {$_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Domain Admins" -Members $_.SamAccountName -confirm:$false}
-    Get-ADGroupMember -Identity "Enterprise Admins" | Where-Object {$_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Enterprise Admins" -Members $_.SamAccountName -confirm:$false}
-    $p2 = "N/A"
+    # Get-ADGroupMember -Identity "Administrators" | Where-Object {$_.name -ne "Domain Admins" -and $_.name -ne "Enterprise Admins" -and $_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Administrators" -Members $_.SamAccountName -confirm:$false}
+    # Get-ADGroupMember -Identity "Domain Admins" | Where-Object {$_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Domain Admins" -Members $_.SamAccountName -confirm:$false}
+    # Get-ADGroupMember -Identity "Enterprise Admins" | Where-Object {$_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Enterprise Admins" -Members $_.SamAccountName -confirm:$false}
 }
 else {
     $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
@@ -56,10 +54,6 @@ else {
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
     net user deaters $p2 /add | Out-Null
     net localgroup Administrators deaters /add | Out-Null
-}
-Write-Host "$env:ComputerName: User auditing complete" -ForegroundColor Green
-
-if ($OS -match  "ista|2008|2003|XP|xp|Xp|7") {
     Write-Host "$env:COMPUTERNAME: [INFO] deaters:$p2" -ForegroundColor Magenta -BackgroundColor Black
     Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black
 }
@@ -179,6 +173,7 @@ Write-Host "$env:ComputerName: PHP functions disabled" -ForegroundColor Green
 Write-Output Y | Secedit /configure /db secedit.sdb /cfg "C:\Windows\System32\stigs.inf" /overwrite
 Write-Host "$env:ComputerName: Local Policies configured" -ForegroundColor Green
 ######### Service Lockdown #########
+# RDP NLA
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-TCP" /v UserAuthentication /t REG_DWORD /d 1 /f
 if ($DC) {
     Add-ADGroupMember -Identity "Protected Users" -Members "Domain Users"
@@ -224,6 +219,9 @@ if ($IIS) {
         }
     }
     #>
+    foreach ($site in (Get-ChildItem IIS:\Sites)) {
+        C:\Windows\System32\inetsrv\appcmd.exe set config $site.name -section:system.webServer/directoryBrowse /enabled:"False"
+    }
 }
 net stop spooler | Out-Null
 sc.exe config spooler start=disabled | Out-Null

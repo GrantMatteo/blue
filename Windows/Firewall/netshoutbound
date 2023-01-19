@@ -1,12 +1,8 @@
-netsh advfirewall firewall delete rule all dir=out
+Get-NetFirewallRule -Direction Outbound | Remove-NetFirewallRule
 
-netsh advfirewall set allprofiles logging filename %systemroot%\System32\LogFiles\Firewall\pfirewall.log
-netsh advfirewall set allprofiles logging maxfilesize 16384
-netsh advfirewall set allprofiles logging droppedconnections enable
-netsh advfirewall set allprofiles logging allowedconnections enable
+Set-NetFirewallProfile -All -LogBlocked True -LogMaxSizeKilobytes 16384 -LogAllowed False -LogFileName "%systemroot%\System32\LogFiles\Firewall\pfirewall.log"
 
-netsh advfirewall set allprofiles state on
-netsh advfirewall set allprofiles firewallpolicy "allowinbound,blockoutboundalways"
+Set-NetFirewallProfile -All -DefaultInboundAction Block -DefaultOutboundAction Block -Enabled True
 
 netsh a s a state off
 
@@ -22,13 +18,6 @@ for ($i = 0; $i -lt $LogOut.Length; $i++) {
 
 $SocketsOut = $LogOut | Select-Object -Unique
 
-$Program = ($PortTable.GetEnumerator() | Where-Object key -eq $Program | Select-Object -expand Value)
-$SocketsOut | ForEach-Object {
-    if($PortTable[[uint16] $_.split(":")[1]] -eq $NULL) {
-        netsh advfirewall firewall add rule name= "$_" dir=out action=allow protocol=TCP remoteport= $_.split(":")[1] enable=yes
-    } else {
-        $Program = $_.split(":")[1];
-        $Program = ($PortTable.GetEnumerator() | Where-Object key -eq $Program | Select-Object -expand Value)
-        netsh advfirewall firewall add rule name= "$_" program= $Program dir=out action=allow protocol=TCP remoteport= $_.split(":")[1] enable=yes
-    }
-}
+$SocketsOut = $SocketsOut | Where-Object {$_ -like "192.168.*" -or $_ -like "10.*" -or $_ -like "172.16.*" -or $_ -like "172.17.*" -or $_ -like "172.18.*" -or $_ -like "172.19.*" -or $_ -like "172.20.*" -or $_ -like "172.21.*" -or $_ -like "172.22.*" -or $_ -like "172.23.*" -or $_ -like "172.24.*" -or $_ -like "172.25.*" -or $_ -like "172.26.*" -or $_ -like "172.27.*" -or $_ -like "172.28.*" -or $_ -like "172.29.*" -or $_ -like "172.30.*" -or $_ -like "172.31.*"}
+
+$SocketsOut | ForEach-Object {New-NetFirewallRule -DisplayName "$_" -Direction Outbound -Action Allow -RemotePort $_.split(":")[1] -RemoteAddress $_.split(":")[0] -Protocol TCP -Enabled True -Profile Any}

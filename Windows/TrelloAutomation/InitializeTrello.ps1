@@ -20,11 +20,13 @@ $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSyst
 $Denied = @()
 foreach ($Computer in $Computers) {
     try {
-        Copy-Item -Path $Stigs -Destination "C:\Windows\System32\stigs.inf" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
-        Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\Sysmon.exe" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
-        Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
-        Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
-        Copy-Item -Path $SysmonConfig -Destination "C:\Windows\System32\smce.xml" -toSession (New-PSSession -ComputerName $Computer) -Recurse -Force
+        $Session = New-PSSession -ComputerName $Computer
+        Copy-Item -Path $Stigs -Destination "C:\Windows\System32\stigs.inf" -toSession $Session -Recurse -Force
+        Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\Sysmon.exe" -toSession $Session -Recurse -Force
+        Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession $Session -Recurse -Force
+        Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession $Session -Recurse -Force
+        Copy-Item -Path $SysmonConfig -Destination "C:\Windows\System32\smce.xml" -toSession $Session -Recurse -Force
+        # TODO: Copy firewall over too
     }
     catch {
         $Denied += $Computer
@@ -32,7 +34,7 @@ foreach ($Computer in $Computers) {
     }
 }
 
-$WinRMable = Compare-Object $Computers $Denied | Select-Object -ExpandProperty InputObject
+# $WinRMable = Compare-Object $Computers $Denied | Select-Object -ExpandProperty InputObject
 
 Set-TrelloConfiguration -AccessToken $TrelloAccessToken -ApiKey $TrelloAPI
 New-TrelloBoard -Name CCDC
