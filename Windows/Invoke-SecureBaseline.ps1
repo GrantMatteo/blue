@@ -1,4 +1,11 @@
 Set-ExecutionPolicy Unrestricted -Force
+
+Write-Host "#### Hostname ####" -ForegroundColor Cyan
+Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object Name, Domain
+
+Write-Host "#### IP ####" -ForegroundColor Cyan
+Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress, InterfaceAlias | Where-Object IPAddress -NotLike '127.0.0.1'
+
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
 $Error.Clear()
 $ErrorActionPreference = "SilentlyContinue"
