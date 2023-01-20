@@ -1,81 +1,14 @@
-//doc cover
-function createDoc() {
-
-  var doc = DocumentApp.create('Business Inject');
-  var docId = doc.getId();
-  var docUrl = doc.getUrl();
-
-  function onOpen() {
-  DocumentApp.getUi().createMenu("Header / Footer")
-    .addItem("Reset header", "resetHeader")
-    .addItem("Reset footer", "resetFooter")
-    .addToUi()
-}
-
-function resetHeader() {
-  try {
-    DocumentApp.getActiveDocument().getHeader().removeFromParent();
-  } catch(e) {
-    throw "No header present !!";
-  }
-}
-
-function resetFooter() {
-  try {
-    DocumentApp.getActiveDocument().getFooter().removeFromParent();
-  } catch(e) {
-    throw "No footer present !!";
-  }
-}
-
-  var body = doc.getBody();
-  var rowsData = [['INJECT SUBJECT']]
-
-  body.setMarginLeft(0);
-  body.setMarginTop(0);
-  body.setMarginBottom(0);
-  body.editAsText().setFontSize(0);
-
-  table = body.appendTable(rowsData);
-  table.setBorderColor('#10275d');
-  table.setBorderWidth(1);
-  table.setColumnWidth(0, 611.28);
-  table.getRow(0).setMinimumHeight(788);
-
-  var cellVertical = {};
-  cellVertical[DocumentApp.Attribute.VERTICAL_ALIGNMENT] = DocumentApp.VerticalAlignment.MIDDLE;
-  table.getRow(0).getCell(0).getChild(0).asParagraph().setAttributes(cellVertical)
-
-  var cellHorizontal = {};
-  cellHorizontal[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
-  table.getRow(0).getCell(0).getChild(0).asParagraph().setAttributes(cellHorizontal)
-
-  var cellColor = {};
-  cellColor[DocumentApp.Attribute.BACKGROUND_COLOR] = '#10375d';
-  table.getRow(0).getCell(0).setAttributes(cellColor)
-  
-  table.getRow(0).setBackgroundColor('#10375d');
-  table.getRow(0).editAsText().setFontSize(28);
-  table.getRow(0).editAsText().setBold(true);
-  table.getRow(0).setForegroundColor('#FFFFFF');
-
-  body.insertPageBreak(2);
-
-  
-
-  console.log('URL: ' + docUrl);
-}
-
 //doc body
 function createBody() {
 
   DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
   var doc = DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
   var body = doc.getBody();
+  var header = doc.getHeader();
+  var footer = doc.getFooter();
 
   function setHeaderMargins() {
   var doc = DocumentApp.getActiveDocument();
-  var header = doc.getHeader();
 
   header.setMarginTop(0);
   header.setMarginBottom(0);
@@ -83,9 +16,29 @@ function createBody() {
 
   function setFooterMargins() {
   var doc = DocumentApp.getActiveDocument();
-  var footer = doc.getFooter();
 
   footer.setMarginTop(0);
   footer.setMarginBottom(0);
   }
+
+  header.editAsText().setFontSize(0);
+
+  var headerTable = [["LOGO", " ","Team XX"], ["Re: INSERT"," "," "]]
+  var table = header.appendTable(headerTable);
+
+  table.setBorderWidth(1);
+  table.setColumnWidth(0, 221.256);
+  table.setColumnWidth(1, 257.256);
+  table.setColumnWidth(2, 133.488);
+
+  table.getRow(0).editAsText().setFontSize(11);
+  table.getRow(0).editAsText().setFontFamily("Calibri");
+  table.getRow(0).editAsText().setBold(true);
+  table.getRow(0).setForegroundColor('#FFFFFF');
+
+  var rowOneColor = {};
+  rowOneColor[DocumentApp.Attribute.BACKGROUND_COLOR] = '#10375d';
+  table.getRow(0).getCell(0).setAttributes(rowOneColor)
+  table.getRow(0).getCell(1).setAttributes(rowOneColor)  
+  table.getRow(0).getCell(2).setAttributes(rowOneColor)
 }
