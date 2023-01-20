@@ -27,10 +27,19 @@ Get-DnsClientServerAddress -InterfaceIndex (Get-NetAdapter | Select-Object -expa
 
 Write-Host "#### Installed Programs ####" -Foregroundcolor Cyan 6>&1
 $InstalledSoftware = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
-foreach($obj in $InstalledSoftware){write-host $obj.GetValue('DisplayName') -NoNewline 6>&1; write-host " - " -NoNewline 6>&1; write-host $obj.GetValue('DisplayVersion') 6>&1}
+foreach($obj in $InstalledSoftware) {
+    if (!($null -eq $obj.GetValue('DisplayName'))) {
+    write-host $obj.GetValue('DisplayName') -NoNewline 6>&1
+    write-host " - " -NoNewline 6>&1
+    write-host $obj.GetValue('DisplayVersion') 6>&1
+    }
+}
 
 $InstalledSoftware = Get-ChildItem "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
-foreach($obj in $InstalledSoftware){write-host $obj.GetValue('DisplayName') -NoNewline 6>&1; write-host " - " -NoNewline 6>&1; write-host $obj.GetValue('DisplayVersion') 6>&1}
+foreach($obj in $InstalledSoftware) {
+    write-host $obj.GetValue('DisplayName') -NoNewline 6>&1
+    write-host " - " -NoNewline 6>&1
+    write-host $obj.GetValue('DisplayVersion') 6>&1}
 
 #RunKeys
 Write-Host "#### Registry Startups ####" -Foregroundcolor Cyan 6>&1

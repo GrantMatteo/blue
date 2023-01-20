@@ -3,6 +3,7 @@ $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSyst
 $Denied = @()
 $Sessions = @()
 $Ans = ""
+mkdir $env:ProgramFiles\blue\windows\logs
 foreach ($Computer in $Computers) {
     $TestSession = New-PSSession -ComputerName $Computer
     if ($TestSession) {
@@ -16,9 +17,9 @@ foreach ($Computer in $Computers) {
 }
 
 if ($Denied.Count -gt 0) {
-    $Ans = Read-Host -Prompt "SOME COMPUTERS UNAVAILABLE, are you sure you want to continue? [y/n]"
+    $Ans = Read-Host -Prompt "[WARNING] SOME COMPUTERS UNAVAILABLE, are you sure you want to continue? [y/n]"
     while ($Ans -ne "y" -and $Ans -ne "n") {
-        $Ans = Read-Host -Prompt "SOME COMPUTERS UNAVAILABLE, are you sure you want to continue? [y/n]"
+        $Ans = Read-Host -Prompt "[WARNING] SOME COMPUTERS UNAVAILABLE, are you sure you want to continue? [y/n]"
     }
 } 
 else {
@@ -30,16 +31,19 @@ if ($Ans -eq "n") {
 }
 if ($Ans -eq "y" -or $Denied.Count -eq 0) {
     foreach ($Session in $Sessions) {
-        Read-Host -Prompt "Continue with invetory? Press Enter to continue."
         $Inventory = Invoke-Command -FilePath $env:ProgramFiles\blue\windows\TrelloAutomation\TrelloAutomation.ps1 -Session $Session -AsJob
+        Write-Host "[INFO] Script invoked on $($Session.ComputerName)" -ForegroundColor Green
         Wait-Job $Inventory
         $r = Receive-Job $Inventory
-        $r | ForEach-Object {$_ > $env:ProgramFiles\blue\windows\logs\$($_.PSComputerName).trlout}
+        $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).trlout
+        Write-Host "[INFO] Inventory done for $($Session.ComputerName)" -ForegroundColor Green
     
-        Read-Host -Prompt "Continue with Hardening? Press Enter to continue."
+
         $Hardening = Invoke-Command -FilePath $env:ProgramFiles\blue\windows\Invoke-SecureBaseline.ps1 -Session $Session -AsJob
+        Write-Host "[INFO] Script invoked on $($Session.ComputerName)" -ForegroundColor Green
         Wait-Job $Hardening
         $r = Receive-Job $Hardening
-        $r | ForEach-Object {$_ > $env:ProgramFiles\blue\windows\logs\$($_.PSComputerName).secbout}
+        $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).secbout
+        Write-Host "[INFO] hardening done for $($Session.ComputerName)" -ForegroundColor Green
     } 
 }
