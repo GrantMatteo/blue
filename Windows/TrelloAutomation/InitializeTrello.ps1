@@ -17,7 +17,7 @@ $SysmonConfig = "C:\Windows\System32\smce.xml"
 $FirewallIn = "$env:ProgramFiles\blue\Windows\Firewall\FirewallInboundTemplate.ps1"
 $FirewallOut = "$env:ProgramFiles\blue\Windows\Firewall\FirewallOutboundTemplate.ps1"
 
-Get-ChildItem "C:\Program Files\blue\Windows" -Recurse | Unblock-File
+Get-ChildItem $env:ProgramFiles\blue\Windows -Recurse | Unblock-File
 
 #$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select -expand hostname
 $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty DNSHostname

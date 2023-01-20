@@ -5,6 +5,11 @@ Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object 
 Write-Host "#### IP ####" -Foregroundcolor Cyan 6>&1
 Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress, InterfaceAlias | Where-Object IPAddress -NotLike '127.0.0.1'
 
+$DC = Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'"
+if ($DC) {
+    Write-Host "#### DC Detected ####" -Foregroundcolor Cyan 6>&1
+}
+
 Write-Host "#### Current Admin ####" -Foregroundcolor Cyan 6>&1
 whoami.exe
 
@@ -13,11 +18,6 @@ Write-Host "#### OS ####" -Foregroundcolor Cyan 6>&1
 
 Write-Host "#### DNS Servers ####" -Foregroundcolor Cyan 6>&1
 Get-DnsClientServerAddress -InterfaceIndex (Get-NetAdapter | Select-Object -expand ifindex) | Where-Object ServerAddresses -inotmatch "::" | Select-Object -expand ServerAddresses
-
-$DC = Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'"
-if ($DC) {
-    Write-Host "#### DC Detected ####" -Foregroundcolor Cyan 6>&1
-}
 
 #Network Connections
 #$NetworkConnections = Get-NetTCPConnection -State Listen,Established | where-object {($_.RemotePort -ne 443) -and ($_.LocalPort -ne 5985) -and ($_.LocalAddress -inotmatch '::' )}| sort-object state,localport | Select-Object localaddress,localport,remoteaddress,remoteport,@{'Name' = 'ProcessName';'Expression'={(Get-Process -Id $_.OwningProcess).Name}}
@@ -97,8 +97,6 @@ if ($DC) {
             
         }
     }
-    Write-Host "#### ALL Domain Users ####" -Foregroundcolor Cyan 6>&1
-    Get-ADUser -filter * | Select-Object -ExpandProperty Name | Out-String
 } else {
     Write-Host "#### Group Membership ####" -Foregroundcolor Cyan 6>&1
     $Groups = net localgroup | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 2
@@ -112,10 +110,9 @@ if ($DC) {
             Write-Host "$Users" 6>&1
         }
     }
-    Write-Host "#### ALL Users ####" -Foregroundcolor Cyan 6>&1
-    Get-WmiObject win32_useraccount | ForEach-Object {$_.Name}
 }
-
+Write-Host "#### ALL Users ####" -Foregroundcolor Cyan 6>&1
+    Get-WmiObject win32_useraccount | ForEach-Object {$_.Name}
 #Windows Features
 Write-Host "#### Features ####" -Foregroundcolor Cyan 6>&1
 Get-WindowsOptionalFeature -Online | Where-Object state | Select-Object FeatureName

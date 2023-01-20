@@ -22,7 +22,7 @@ if ($Denied.Count -gt 0) {
     }
 } 
 else {
-    Write-Host Write-Host "[INFO] Locked and loaded, fire away" -ForegroundColor Green
+    Write-Host "[INFO] Locked and loaded, fire away" -ForegroundColor Green
 }
 if ($Ans -eq "n") {
     Write-Host "[INFO] Exiting..." -ForegroundColor Yellow
