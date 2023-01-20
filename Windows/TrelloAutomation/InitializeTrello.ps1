@@ -22,20 +22,24 @@ Get-ChildItem $env:ProgramFiles\blue\Windows -Recurse | Unblock-File
 #$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select -expand hostname
 $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty DNSHostname
 $Denied = @()
+$DC = [System.Net.Dns]::GetHostByName($env:computerName).Hostname
+
 foreach ($Computer in $Computers) {
-    try {
-        $Session = New-PSSession -ComputerName $Computer
-        Copy-Item -Path $Stigs -Destination "C:\Windows\System32\stigs.inf" -toSession $Session -Recurse -Force
-        Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\Sysmon.exe" -toSession $Session -Recurse -Force
-        Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession $Session -Recurse -Force
-        Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession $Session -Recurse -Force
-        Copy-Item -Path $SysmonConfig -Destination "C:\Windows\System32\smce.xml" -toSession $Session -Recurse -Force
-        Copy-Item -Path $FirewallIn -Destination "C:\Windows\System32\FirewallInboundTemplate.ps1" -toSession $Session -Recurse -Force
-        Copy-Item -Path $FirewallOut -Destination "C:\Windows\System32\FirewallOutboundTemplate.ps1" -toSession $Session -Recurse -Force
-    }
-    catch {
-        $Denied += $Computer
-        Write-Host "Failed to copy to $Computer" -ForegroundColor Red
+    if (!($Computer -eq $DC)) {
+        $session = New-PSSession -ComputerName $Computer
+        if ($session) {
+            Write-Host "[INFO] Preparing to WinRM to: $Computer" -ForegroundColor Green
+            Copy-Item -Path $Stigs -Destination "C:\Windows\System32\stigs.inf" -toSession $Session -Recurse -Force
+            Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\Sysmon.exe" -toSession $Session -Recurse -Force
+            Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession $Session -Recurse -Force
+            Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession $Session -Recurse -Force
+            Copy-Item -Path $SysmonConfig -Destination "C:\Windows\System32\smce.xml" -toSession $Session -Recurse -Force
+            Copy-Item -Path $FirewallIn -Destination "C:\Windows\System32\FirewallInboundTemplate.ps1" -toSession $Session -Recurse -Force
+            Copy-Item -Path $FirewallOut -Destination "C:\Windows\System32\FirewallOutboundTemplate.ps1" -toSession $Session -Recurse -Force
+        }
+        else {
+            Write-Host "Damn" -ForegroundColor Red
+        }
     }
 }
 
