@@ -32,7 +32,7 @@ if ($Ans -eq "n") {
 if ($Ans -eq "y" -or $Denied.Count -eq 0) {
     foreach ($Session in $Sessions) {
         $Inventory = Invoke-Command -FilePath $env:ProgramFiles\blue\windows\TrelloAutomation\TrelloAutomation.ps1 -Session $Session -AsJob
-        Write-Host "[INFO] Script invoked on $($Session.ComputerName)" -ForegroundColor Green
+        Write-Host "[INFO] Inventory Script invoked on $($Session.ComputerName)" -ForegroundColor Green
         Wait-Job $Inventory
         $r = Receive-Job $Inventory
         $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).inventory
@@ -40,10 +40,11 @@ if ($Ans -eq "y" -or $Denied.Count -eq 0) {
     
 
         $Hardening = Invoke-Command -FilePath $env:ProgramFiles\blue\windows\Invoke-SecureBaseline.ps1 -Session $Session -AsJob
-        Write-Host "[INFO] Script invoked on $($Session.ComputerName)" -ForegroundColor Green
+        Write-Host "[INFO] Hardening Script invoked on $($Session.ComputerName)" -ForegroundColor Green
         Wait-Job $Hardening
         $r = Receive-Job $Hardening
         $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).baseline
         Write-Host "[INFO] hardening done for $($Session.ComputerName)" -ForegroundColor Green
     } 
 }
+Get-PSSession | Remove-PSSession
