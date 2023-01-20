@@ -125,6 +125,8 @@ function createHeader() {
 }
 
 ****************************** FOOTER SETUP ******************************
+
+//FOOTER
 function createFooter(){
 
   DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
@@ -161,6 +163,24 @@ function createFooter(){
 
   //row 2
   footTable.getRow(1).setMinimumHeight(37.656);
+  footTable.getRow(1).editAsText().setFontSize(8);
+  footTable.getRow(1).editAsText().setFontFamily("Arial");
+  footTable.getRow(1).editAsText().setItalic(true);
+  footTable.getRow(1).setForegroundColor('#000000');
+
+  var footTwoColor = {};
+  footTwoColor[DocumentApp.Attribute.BACKGROUND_COLOR] = '#d9d9d9';
+  footTable.getRow(1).getCell(0).setAttributes(footTwoColor)
+
+  //row 3
   footTable.getRow(2).setMinimumHeight(37.656);
+  footTable.getRow(2).setForegroundColor('#000000');
+
+  var footThreeColor = {};
+  footThreeColor[DocumentApp.Attribute.BACKGROUND_COLOR] = '#d9d9d9';
+  footTable.getRow(2).getCell(0).setAttributes(footThreeColor)
 }
+// TABLE ALIGNMENT: MIDDLE; ALL CENTER ALIGNED
+
+
 
