@@ -65,3 +65,27 @@ function resetFooter() {
 
   console.log('URL: ' + docUrl);
 }
+
+//doc body
+function createBody() {
+
+  DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
+  var doc = DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
+  var body = doc.getBody();
+
+  function setHeaderMargins() {
+  var doc = DocumentApp.getActiveDocument();
+  var header = doc.getHeader();
+
+  header.setMarginTop(0);
+  header.setMarginBottom(0);
+  }
+
+  function setFooterMargins() {
+  var doc = DocumentApp.getActiveDocument();
+  var footer = doc.getFooter();
+
+  footer.setMarginTop(0);
+  footer.setMarginBottom(0);
+  }
+}
