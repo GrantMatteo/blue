@@ -125,8 +125,6 @@ function createHeader() {
 }
 
 ****************************** FOOTER SETUP ******************************
-
-//FOOTER
 function createFooter(){
 
   DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
@@ -179,8 +177,10 @@ function createFooter(){
   var footThreeColor = {};
   footThreeColor[DocumentApp.Attribute.BACKGROUND_COLOR] = '#d9d9d9';
   footTable.getRow(2).getCell(0).setAttributes(footThreeColor)
-}
+  
 // TABLE ALIGNMENT: MIDDLE; ALL CENTER ALIGNED
+}
+
 
 
 
