@@ -69,8 +69,8 @@ function resetFooter() {
 ****************************** HEADER SETUP ******************************
 function createBody() {
 
-  DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
-  var doc = DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
+  DocumentApp.openByUrl("insert here");
+  var doc = DocumentApp.openByUrl("insert here");
   var body = doc.getBody();
   var header = doc.getHeader();
   var footer = doc.getFooter();
@@ -94,11 +94,12 @@ function createBody() {
   var headerTable = [["LOGO", " ","Team XX"], ["Re: INSERT"," "," "]]
   var table = header.appendTable(headerTable);
 
-  table.setBorderWidth(1);
+  table.setBorderWidth(0);
   table.setColumnWidth(0, 221.256);
   table.setColumnWidth(1, 257.256);
   table.setColumnWidth(2, 133.488);
 
+  table.getRow(0).setMinimumHeight(100);
   table.getRow(0).editAsText().setFontSize(11);
   table.getRow(0).editAsText().setFontFamily("Calibri");
   table.getRow(0).editAsText().setBold(true);
@@ -109,4 +110,16 @@ function createBody() {
   table.getRow(0).getCell(0).setAttributes(rowOneColor)
   table.getRow(0).getCell(1).setAttributes(rowOneColor)  
   table.getRow(0).getCell(2).setAttributes(rowOneColor)
+
+  table.getRow(1).setMinimumHeight(48.456);
+  table.getRow(1).editAsText().setFontSize(20);
+  table.getRow(1).editAsText().setFontFamily("Calibri");
+  table.getRow(1).editAsText().setBold(true);
+  table.getRow(1).setForegroundColor('#FFFFFF');
+
+  var rowTwoColor = {};
+  rowTwoColor[DocumentApp.Attribute.BACKGROUND_COLOR] = '#fba61f';
+  table.getRow(1).getCell(0).setAttributes(rowTwoColor)
+  table.getRow(1).getCell(1).setAttributes(rowTwoColor)  
+  table.getRow(1).getCell(2).setAttributes(rowTwoColor)
 }
