@@ -31,7 +31,7 @@ elif command -v apt-get >/dev/null ; then
 elif command -v apk >/dev/null ; then
     apk update >/dev/null
     apk add iproute2 net-tools >/dev/null
-
+fi
 # Other PHP configs
 for ini in $(find /etc -name php.ini 2>/dev/null); do
     echo "expose_php = Off" >> $ini
@@ -53,7 +53,7 @@ for ini in $(find /etc -name php.ini 2>/dev/null); do
 done 
 
 # Webshell?
-setfacl -m u:www-data:--- /bin/sh
+setfacl -m 'u:www-data:---' /bin/sh 2>/dev/null
 
 # profiles
 for f in '.profile' '.bashrc' '.bash_login'; do
