@@ -95,6 +95,7 @@ Write-Host "#### SMB Shares ####" -Foregroundcolor Cyan 6>&1
 Get-WmiObject -Class Win32_Share | Select-Object Name,Path
 
 #Users and Groups
+Write-Host "#### Group Membership ####" -Foregroundcolor Cyan 6>&1
 if ($DC) {
     $Groups = Get-AdGroup -Filter 'SamAccountName -NotLike "Domain Users"' | Select-Object -ExpandProperty Name
     $Groups | ForEach-Object {
@@ -107,7 +108,6 @@ if ($DC) {
         }
     }
 } else {
-    Write-Host "#### Group Membership ####" -Foregroundcolor Cyan 6>&1
     $Groups = net localgroup | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 2
     $Groups = $Groups -replace '\*',''
     $Groups | ForEach-Object {
