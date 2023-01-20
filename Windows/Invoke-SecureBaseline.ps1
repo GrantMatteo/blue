@@ -61,7 +61,7 @@ else {
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
     net user deaters $p2 /add | Out-Null
     net localgroup Administrators deaters /add | Out-Null
-    Write-Host "$env:COMPUTERNAME: [INFO] admin:$p2" -ForegroundColor Magenta -BackgroundColor Black 6>&1
+    Write-Host "$env:COMPUTERNAME: [INFO] Admin account:$p2" -ForegroundColor Magenta -BackgroundColor Black 6>&1
     Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black 6>&1
 }
 
@@ -69,7 +69,7 @@ else {
 Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse | Out-Null
 Remove-Item C:\Windows\System32\GroupPolicy* -Recurse -Force | Out-Null
 gpupdate /force
-Write-Host "$env:ComputerName: Group Policy reset" -Foregroundcolor Green 6>&1
+Write-Host "$env:ComputerName: [INFO] Group Policy reset" -Foregroundcolor Green 6>&1
 
 ######### PTH Mitigation #########
 # Disable storage of the LM hash for passwords less than 15 characters
@@ -96,14 +96,25 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v Loca
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 1 /f | Out-Null
 # Enable LSASSS process auditing
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe" /v AuditLevel /t REG_DWORD /d 8 /f | Out-Null
-Write-Host "$env:ComputerName: PTH Mitigation complete" -Foregroundcolor Green 6>&1
+Write-Host "$env:ComputerName: [INFO] PTH Mitigation complete" -Foregroundcolor Green 6>&1
 
 ######### Defender #########
 #TODO: Hardcode all defender defaults
 
-reg add "HKLM\Software\Policies\Microsoft\Windows Defender\Spynet" /v SpyNetReporting /t REG_DWORD /d 1 /f | Out-Null
-reg add "HKLM\Software\Policies\Microsoft\Windows Defender\Spynet" /v SubmitSamplesConsent /t REG_DWORD /d 1 /f | Out-Null
-reg add "HKLM\Software\Policies\Microsoft\Windows Defender\MpEngine" /v MpCloudBlockLevel /t REG_DWORD /d 6 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v SpyNetReporting /t REG_DWORD /d 2 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v SubmitSamplesConsent /t REG_DWORD /d 3 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v DisableBlockAtFirstSeen /t REG_DWORD /d 0 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\MpEngine" /v MpCloudBlockLevel /t REG_DWORD /d 6 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableBehaviorMonitoring" /t REG_DWORD /d 0 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableRealtimeMonitoring" /t REG_DWORD /d 0 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableIOAVProtection" /t REG_DWORD /d 0 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender" /v "DisableAntiSpyware" /t REG_DWORD /d 0 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender" /v "ServiceKeepAlive" /t REG_DWORD /d 1 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "CheckForSignaturesBeforeRunningScan" /t REG_DWORD /d 1 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "DisableHeuristics" /t REG_DWORD /d 0 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "DisableArchiveScanning" /t REG_DWORD /d 0 /f | Out-Null
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Advanced Threat Protection" /v "ForceDefenderPassiveMode" /t REG_DWORD /d 0 /f | Out-Null
+
 try {
     # Block Office applications from injecting code into other processes
     Add-MpPreference -AttackSurfaceReductionRules_Ids 75668C1F-73B5-4CF0-BB93-3ECF5CB7CC84 -AttackSurfaceReductionRules_Actions Enabled | Out-Null
@@ -135,7 +146,7 @@ try {
     Add-MpPreference -AttackSurfaceReductionRules_Ids 7674BA52-37EB-4A4F-A9A1-F0F9A1619A2C -AttackSurfaceReductionRules_Actions Enabled | Out-Null
     # Block persistence through WMI event subscription
     Add-MpPreference -AttackSurfaceReductionRules_Ids E6DB77E5-3DF2-4CF1-B95A-636979351E5B -AttackSurfaceReductionRules_Actions Enabled | Out-Null
-    Write-Host "$env:ComputerName: Defender Attack Surface Reduction rules enabled" -Foregroundcolor Green 6>&1
+    Write-Host "$env:ComputerName: [INFO] Defender Attack Surface Reduction rules enabled" -Foregroundcolor Green 6>&1
     ForEach ($ExcludedASR in (Get-MpPreference).AttackSurfaceReductionOnlyExclusions) {
         Remove-MpPreference -AttackSurfaceReductionOnlyExclusions $ExcludedASR | Out-Null
     }
@@ -159,7 +170,7 @@ ForEach ($ExcludedProc in (Get-MpPreference).ExclusionProcess) {
     Remove-MpPreference -ExclusionProcess $ExcludedProc | Out-Null
 }
 Write-Host "$env:ComputerName: [INFO] Defender exclusions removed" -Foregroundcolor Green 6>&1
-
+reg add "HKLM\SOFTWARE\Microsoft\Windows Defender\Features" /v TamperProtection /t REG_DWORD /d 5 /f | Out-Null
 ######### Disable PHP Functions #########
 $php = Get-ChildItem C:\ php.exe -recurse -ErrorAction SilentlyContinue | ForEach-Object {& $_.FullName --ini | Out-String}
 $ConfigFiles = @()
@@ -176,13 +187,15 @@ Foreach ($ConfigFile in $ConfigFiles) {
     Add-Content $ConfigFile $ConfigString_DisableFuncs
     Add-Content $ConfigFile $ConfigString_FileUploads
 }
-Write-Host "$env:ComputerName: PHP functions disabled" -Foregroundcolor Green 6>&1
+Write-Host "$env:ComputerName:[INFO] PHP functions disabled" -Foregroundcolor Green 6>&1
 ######### Local Policies #########
 Write-Output Y | Secedit /configure /db secedit.sdb /cfg "C:\Windows\System32\stigs.inf" /overwrite
-Write-Host "$env:ComputerName: Local Policies configured" -Foregroundcolor Green 6>&1
+Write-Host "$env:ComputerName:[INFO] Local Policies configured" -Foregroundcolor Green 6>&1
 ######### Service Lockdown #########
 # RDP NLA
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-TCP" /v UserAuthentication /t REG_DWORD /d 1 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-TCP" /v UserAuthentication /t REG_DWORD /d 1 /f | Out-Null
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v AllowTSConnections /t REG_DWORD /d 1 /f | Out-Null
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f | Out-Null
 if ($DC) {
     Add-ADGroupMember -Identity "Protected Users" -Members "Domain Users"
     # CVE-2020-1472 (Zerologon)
@@ -233,7 +246,7 @@ if ($IIS) {
 }
 net stop spooler | Out-Null
 sc.exe config spooler start=disabled | Out-Null
-Write-Host "$env:ComputerName: Services locked down" -Foregroundcolor Green 6>&1
+Write-Host "$env:ComputerName:[INFO] Services locked down" -Foregroundcolor Green 6>&1
 ######### Misc #########
 # set font reg keys
 reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI (TrueType)" /t REG_SZ /d "segoeui.ttf" /f | Out-Null
@@ -271,7 +284,7 @@ Start-Process -Filepath "C:\Windows\Resources\Themes\aero.theme"
 # set UI lang to english
 reg add "HKCU\Control Panel\Desktop" /v PreferredUILanguages /t REG_SZ /d en-US /f | Out-Null
 reg add "HKLM\Software\Policies\Microsoft\MUI\Settings" /v PreferredUILanguages /t REG_SZ /d en-US /f | Out-Null
-Write-Host "$env:ComputerName: Font, Themes, and Languages set to default" -Foregroundcolor Green 6>&1
+Write-Host "$env:ComputerName:[INFO] Font, Themes, and Languages set to default" -Foregroundcolor Green 6>&1
 
 # CVE-2021-34527 (PrintNightmare)
 reg add "HKLM\Software\Policies\Microsoft\Windows NT\Printers" /v RegisterSpoolerRemoteRpcEndPoint /t REG_DWORD /d 2 /f | Out-Null
@@ -293,20 +306,51 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v Enab
 # Disable loading of test signed kernel-drivers
 Bcdedit.exe -set TESTSIGNING OFF | Out-Null
 Bcdedit.exe -set loadoptions ENABLE_INTEGRITY_CHECKS | Out-Null
+
+TAKEOWN /F C:\Windows\System32\sethc.exe /A | Out-Null
+ICACLS C:\Windows\System32\sethc.exe /grant administrators:F | Out-Null
+Remove-Item C:\Windows\System32\sethc.exe -Force | Out-Null
+
+TAKEOWN /F C:\Windows\System32\Utilman.exe /A | Out-Null
+ICACLS C:\Windows\System32\Utilman.exe /grant administrators:F | Out-Null
+Remove-Item C:\Windows\System32\Utilman.exe -Force | Out-Null
+
+
+TAKEOWN /F C:\Windows\System32\osk.exe /A | Out-Null
+ICACLS C:\Windows\System32\osk.exe /grant administrators:F | Out-Null
+Remove-Item C:\Windows\System32\osk.exe -Force | Out-Null
+
+
+TAKEOWN /F C:\Windows\System32\Narrator.exe /A | Out-Null
+ICACLS C:\Windows\System32\Narrator.exe /grant administrators:F | Out-Null
+Remove-Item C:\Windows\System32\Narrator.exe -Force | Out-Null
+
+
+TAKEOWN /F C:\Windows\System32\Magnify.exe /A | Out-Null
+ICACLS C:\Windows\System32\Magnify.exe /grant administrators:F | Out-Null
+Remove-Item C:\Windows\System32\Magnify.exe -Force | Out-Null
+
+reg ADD "HKU\.DEFAULT\Control Panel\Accessibility\StickyKeys" /v Flags /t REG_SZ /d 506 /f | Out-Null
+
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v Hidden /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /V HideFileExt /T REG_DWORD /D 0 /F
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v ShowSuperHidden /t REG_DWORD /d 1 /F
 # Disable 8.3 file names
 # reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v NtfsDisable8dot3NameCreation /t REG_DWORD /d 1 /f | Out-Null
 # Disable anonymous enumeration of shares and pipes
 # reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanManServer\Parameters" /v RestrictNullSessAccess /t REG_DWORD /d 1 /f | Out-Null
 # reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v NullSessionPipes /t REG_MULTI_SZ /f | Out-Null
 # reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v NullSessionShares /t REG_MULTI_SZ /f | Out-Null
-Write-Host "$env:ComputerName: Misc hardening done" -Foregroundcolor Green 6>&1
+Write-Host "$env:ComputerName:[INFO] Misc hardening done" -Foregroundcolor Green 6>&1
 ######### Logging#########
 # Powershell command transcription
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v EnableTranscripting /t REG_DWORD /d 1 /f | Out-Null
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v OutputDirectory /t REG_SZ /d "C:\Windows\debug\timber" /f | Out-Null
 # Powershell script block logging
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f | Out-Null
-Write-Host "$env:ComputerName: Powershell Logging enabled" -Foregroundcolor Green 6>&1
+reg add "HKLM\Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging" /v EnableModuleLogging /t REG_DWORD /d 1 /f | Out-Null
+reg add "HKLM\Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging\ModuleNames" /v * /t REG_SZ /d * /f | Out-Null
+Write-Host "$env:ComputerName:[INFO] Powershell Logging enabled" -Foregroundcolor Green 6>&1
 ######### Constrained Language Mode #########
 #[System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
