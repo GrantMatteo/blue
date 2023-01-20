@@ -22,6 +22,8 @@ auditctl -a exit,always -F arch=b64 -S 43 -k accept_rule
 auditctl -a never,user -F subj_type=crond_t
 auditctl -a never,exit -F subj_type=crond_t
 
+grep -rl "log_format" /etc/audit | xargs sed -ri "s/^(log_format.*)/log_format = ENRICHED/g"
+
 SERVICE=$(which systemctl)
 
 if [[ ! -z systemctl ]]; then
