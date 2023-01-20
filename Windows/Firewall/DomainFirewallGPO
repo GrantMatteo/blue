@@ -59,5 +59,9 @@ function resetFooter() {
   table.getRow(0).editAsText().setBold(true);
   table.getRow(0).setForegroundColor('#FFFFFF');
 
+  body.insertPageBreak(2);
+
+  
+
   console.log('URL: ' + docUrl);
 }

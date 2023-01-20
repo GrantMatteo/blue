@@ -7,7 +7,7 @@ ipt="/sbin/iptables"
 #LOCALNETWORK = Subnet(s) of machines that depend on us and vice versa
 
 # Flush the current rules
-$ipt -F; $ipt -X ;$ipt -P INPUT ACCEPT ; $ipt -P OUTPUT ACCEPT ; $ipt -P FORWARD ACCEPT
+$ipt -P OUTPUT ACCEPT ; $ipt -P FORWARD ACCEPT ; $ipt -F; $ipt -X ;$ipt -P INPUT ACCEPT 
 
 # Allow our machine to respond to connections
 $ipt -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
