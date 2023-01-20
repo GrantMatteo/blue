@@ -35,7 +35,7 @@ if ($Ans -eq "y" -or $Denied.Count -eq 0) {
         Write-Host "[INFO] Script invoked on $($Session.ComputerName)" -ForegroundColor Green
         Wait-Job $Inventory
         $r = Receive-Job $Inventory
-        $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).trlout
+        $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).inventory
         Write-Host "[INFO] Inventory done for $($Session.ComputerName)" -ForegroundColor Green
     
 
@@ -43,7 +43,7 @@ if ($Ans -eq "y" -or $Denied.Count -eq 0) {
         Write-Host "[INFO] Script invoked on $($Session.ComputerName)" -ForegroundColor Green
         Wait-Job $Hardening
         $r = Receive-Job $Hardening
-        $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).secbout
+        $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).baseline
         Write-Host "[INFO] hardening done for $($Session.ComputerName)" -ForegroundColor Green
     } 
 }
