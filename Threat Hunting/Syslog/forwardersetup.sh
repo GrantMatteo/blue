@@ -15,8 +15,12 @@ else
     exit 1;
 fi
 
-curl https://raw.githubusercontent.com/Neo23x0/auditd/master/audit.rules > /etc/audit/audit.rules
-cat /etc/audit/audit.rules > /etc/audit/rules.d/audit.rules
+auditctl -b 8192
+auditctl -a exit,always -F arch=b64 -S 59 -k exec_rule
+auditctl -a exit,always -F arch=b32 -S 11 -k exec_rule
+auditctl -a exit,always -F arch=b64 -S 43 -k accept_rule
+auditctl -a never,user -F subj_type=crond_t
+auditctl -a never,exit -F subj_type=crond_t
 
 SERVICE=$(which systemctl)
 
