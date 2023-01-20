@@ -5,11 +5,13 @@ $TrelloAccessToken = Read-Host -Prompt "Trello Access Token"
 
 
 
+Invoke-WebRequest https://live.sysinternals.com/Sysmon64.exe -UseBasicParsing -OutFile C:\Windows\System32\Sysmon64.exe
 Invoke-WebRequest https://live.sysinternals.com/Sysmon.exe -UseBasicParsing -OutFile C:\Windows\System32\Sysmon.exe
 Invoke-WebRequest https://live.sysinternals.com/procexp.exe -UseBasicParsing -OutFile C:\Windows\System32\procexp.exe
 Invoke-WebRequest https://live.sysinternals.com/Autoruns.exe -UseBasicParsing -OutFile C:\Windows\System32\Autoruns.exe
 Invoke-WebRequest https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml -UseBasicParsing -OutFile C:\Windows\System32\smce.xml
 $Stigs = "$env:ProgramFiles\blue\blue-main\Windows\stigs.inf"
+$Sysmon64 = "C:\Windows\System32\Sysmon64.exe"
 $Sysmon = "C:\Windows\System32\Sysmon.exe"
 $Procexp = "C:\Windows\System32\procexp.exe"
 $Autoruns = "C:\Windows\System32\Autoruns.exe"
@@ -30,6 +32,7 @@ foreach ($Computer in $Computers) {
         if ($session) {
             Write-Host "[INFO] Preparing to WinRM to: $Computer" -ForegroundColor Green
             Copy-Item -Path $Stigs -Destination "C:\Windows\System32\stigs.inf" -toSession $Session -Recurse -Force
+            Copy-Item -Path $Sysmon64 -Destination "C:\Windows\System32\Sysmon64.exe" -toSession $Session -Recurse -Force
             Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\Sysmon.exe" -toSession $Session -Recurse -Force
             Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession $Session -Recurse -Force
             Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession $Session -Recurse -Force

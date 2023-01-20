@@ -31,7 +31,7 @@ reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v Auto
 reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoShareWks /t REG_DWORD /d 0 /f | Out-Null
 net share C$ /delete | Out-Null
 net share ADMIN$ /delete | Out-Null
-Write-Host "$env:ComputerName: SMB shares deleted and settings applied" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName SMB shares deleted and settings applied" -Foregroundcolor Green 6>&1
 
 ######### User Auditing #########
 Add-Type -AssemblyName System.Web
@@ -42,7 +42,7 @@ while ($p -match '[,;:|iIlLoO0]') {
 
 if ($DC) {
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt" -and $_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
-    Write-Host "$env:COMPUTERNAME: [INFO] Admin account:$p" -ForegroundColor Magenta -BackgroundColor Black 6>&1
+    Write-Host "$Env:ComputerName [INFO] Admin account:$p" -ForegroundColor Magenta -BackgroundColor Black 6>&1
     $ADUsers = Get-ADUser -Filter *
     $ADUsers | Set-ADUser -AllowReversiblePasswordEncryption 0 -PasswordNotRequired 0
     # Get-ADGroupMember -Identity "Administrators" | Where-Object {$_.name -ne "Domain Admins" -and $_.name -ne "Enterprise Admins" -and $_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Administrators" -Members $_.SamAccountName -confirm:$false}
@@ -57,15 +57,15 @@ else {
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
     net user deaters $p2 /add | Out-Null
     net localgroup Administrators deaters /add | Out-Null
-    Write-Host "$env:COMPUTERNAME: [INFO] Admin account:$p2" -ForegroundColor Magenta -BackgroundColor Black 6>&1
-    Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black 6>&1
+    Write-Host "$Env:ComputerName [INFO] Admin account:$p2" -ForegroundColor Magenta -BackgroundColor Black 6>&1
+    Write-Host "$Env:ComputerName [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black 6>&1
 }
 
 ######### Reset Policies #########
 Copy-Item C:\Windows\System32\GroupPolicy* C:\gp -Recurse | Out-Null
 Remove-Item C:\Windows\System32\GroupPolicy* -Recurse -Force | Out-Null
 gpupdate /force
-Write-Host "$env:ComputerName: [INFO] Group Policy reset" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] Group Policy reset" -Foregroundcolor Green 6>&1
 
 ######### PTH Mitigation #########
 # Disable storage of the LM hash for passwords less than 15 characters
@@ -92,7 +92,7 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v Loca
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 1 /f | Out-Null
 # Enable LSASSS process auditing
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe" /v AuditLevel /t REG_DWORD /d 8 /f | Out-Null
-Write-Host "$env:ComputerName: [INFO] PTH Mitigation complete" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] PTH Mitigation complete" -Foregroundcolor Green 6>&1
 
 ######### Defender #########
 #TODO: Hardcode all defender defaults
@@ -110,7 +110,7 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "CheckForSig
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "DisableHeuristics" /t REG_DWORD /d 0 /f | Out-Null
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "DisableArchiveScanning" /t REG_DWORD /d 0 /f | Out-Null
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Advanced Threat Protection" /v "ForceDefenderPassiveMode" /t REG_DWORD /d 0 /f | Out-Null
-Write-Host "$env:ComputerName: [INFO] Set Defender options" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] Set Defender options" -Foregroundcolor Green 6>&1
 
 try {
     # Block Office applications from injecting code into other processes
@@ -143,16 +143,16 @@ try {
     Add-MpPreference -AttackSurfaceReductionRules_Ids 7674BA52-37EB-4A4F-A9A1-F0F9A1619A2C -AttackSurfaceReductionRules_Actions Enabled | Out-Null
     # Block persistence through WMI event subscription
     Add-MpPreference -AttackSurfaceReductionRules_Ids E6DB77E5-3DF2-4CF1-B95A-636979351E5B -AttackSurfaceReductionRules_Actions Enabled | Out-Null
-    Write-Host "$env:ComputerName: [INFO] Defender Attack Surface Reduction rules enabled" -Foregroundcolor Green 6>&1
+    Write-Host "$Env:ComputerName [INFO] Defender Attack Surface Reduction rules enabled" -Foregroundcolor Green 6>&1
     ForEach ($ExcludedASR in (Get-MpPreference).AttackSurfaceReductionOnlyExclusions) {
         Remove-MpPreference -AttackSurfaceReductionOnlyExclusions $ExcludedASR | Out-Null
     }
 }
 catch [System.Management.Automation.CommandNotFoundException] {
-    Write-Host "$env:ComputerName: [INFO] Old defender version detected, skipping ASR rules" -Foregroundcolor Yellow 6>&1
+    Write-Host "$Env:ComputerName [INFO] Old defender version detected, skipping ASR rules" -Foregroundcolor Yellow 6>&1
 }
 catch {
-    Write-Host "$env:ComputerName: [INFO] Old defender version detected, skipping ASR rules" -ForegroundColor Red 6>&1
+    Write-Host "$Env:ComputerName [INFO] Old defender version detected, skipping ASR rules" -ForegroundColor Red 6>&1
 }
 ForEach ($ExcludedExt in (Get-MpPreference).ExclusionExtension) {
     Remove-MpPreference -ExclusionExtension $ExcludedExt | Out-Null
@@ -166,7 +166,7 @@ ForEach ($ExcludedDir in (Get-MpPreference).ExclusionPath) {
 ForEach ($ExcludedProc in (Get-MpPreference).ExclusionProcess) {
     Remove-MpPreference -ExclusionProcess $ExcludedProc | Out-Null
 }
-Write-Host "$env:ComputerName: [INFO] Defender exclusions removed" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] Defender exclusions removed" -Foregroundcolor Green 6>&1
 reg add "HKLM\SOFTWARE\Microsoft\Windows Defender\Features" /v TamperProtection /t REG_DWORD /d 5 /f | Out-Null
 ######### Disable PHP Functions #########
 $php = Get-ChildItem C:\ php.exe -recurse -ErrorAction SilentlyContinue | ForEach-Object {& $_.FullName --ini | Out-String}
@@ -184,10 +184,10 @@ Foreach ($ConfigFile in $ConfigFiles) {
     Add-Content $ConfigFile $ConfigString_DisableFuncs
     Add-Content $ConfigFile $ConfigString_FileUploads
 }
-Write-Host "$env:ComputerName:[INFO] PHP functions disabled" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] PHP functions disabled" -Foregroundcolor Green 6>&1
 ######### Local Policies #########
 Write-Output Y | Secedit /configure /db secedit.sdb /cfg "C:\Windows\System32\stigs.inf" /overwrite
-Write-Host "$env:ComputerName:[INFO] Local Policies configured" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] Local Policies configured" -Foregroundcolor Green 6>&1
 ######### Service Lockdown #########
 # RDP NLA
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-TCP" /v UserAuthentication /t REG_DWORD /d 1 /f | Out-Null
@@ -199,7 +199,7 @@ if ($DC) {
     reg add "HKLM\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v FullSecureChannelProtection /t REG_DWORD /d 1 /f | Out-Null
     Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" -Name "vulnerablechannelallowlist" -Force | Out-Null
     # CVE-2021-42278 & CVE-2021-42287 (noPac)
-    Set-ADDomain -Identity $Domain -Replace @{"ms-DS-MachineAccountQuota"="0"} | Out-Null
+    Set-ADDomain -Identity $env:USERDNSDOMAIN -Replace @{"ms-DS-MachineAccountQuota"="0"} | Out-Null
     # TODO: Domain Member: Digitally encrypt or sign secure channel data (always) - Enabled works 2008
     <#
     if ($2008r2OnPrem) {
@@ -243,7 +243,7 @@ if ($IIS) {
 }
 net stop spooler | Out-Null
 sc.exe config spooler start=disabled | Out-Null
-Write-Host "$env:ComputerName:[INFO] Services locked down" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] Services locked down" -Foregroundcolor Green 6>&1
 ######### Misc #########
 # set font reg keys
 reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI (TrueType)" /t REG_SZ /d "segoeui.ttf" /f | Out-Null
@@ -281,7 +281,7 @@ Start-Process -Filepath "C:\Windows\Resources\Themes\aero.theme"
 # set UI lang to english
 reg add "HKCU\Control Panel\Desktop" /v PreferredUILanguages /t REG_SZ /d en-US /f | Out-Null
 reg add "HKLM\Software\Policies\Microsoft\MUI\Settings" /v PreferredUILanguages /t REG_SZ /d en-US /f | Out-Null
-Write-Host "$env:ComputerName:[INFO] Font, Themes, and Languages set to default" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] Font, Themes, and Languages set to default" -Foregroundcolor Green 6>&1
 
 # CVE-2021-34527 (PrintNightmare)
 reg add "HKLM\Software\Policies\Microsoft\Windows NT\Printers" /v RegisterSpoolerRemoteRpcEndPoint /t REG_DWORD /d 2 /f | Out-Null
@@ -338,7 +338,7 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v Sh
 # reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanManServer\Parameters" /v RestrictNullSessAccess /t REG_DWORD /d 1 /f | Out-Null
 # reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v NullSessionPipes /t REG_MULTI_SZ /f | Out-Null
 # reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v NullSessionShares /t REG_MULTI_SZ /f | Out-Null
-Write-Host "$env:ComputerName:[INFO] Misc hardening done" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] Misc hardening done" -Foregroundcolor Green 6>&1
 ######### Logging#########
 # Powershell command transcription
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v EnableTranscripting /t REG_DWORD /d 1 /f | Out-Null
@@ -347,11 +347,16 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" /v O
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f | Out-Null
 reg add "HKLM\Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging" /v EnableModuleLogging /t REG_DWORD /d 1 /f | Out-Null
 reg add "HKLM\Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging\ModuleNames" /v * /t REG_SZ /d * /f | Out-Null
-Write-Host "$env:ComputerName:[INFO] Powershell Logging enabled" -Foregroundcolor Green 6>&1
+Write-Host "$Env:ComputerName [INFO] Powershell Logging enabled" -Foregroundcolor Green 6>&1
 ######### Constrained Language Mode #########
 #[System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
 ######### Sysmon Setup #########
-& "C:\Windows\System32\Sysmon.exe" -accepteula -i C:\Windows\System32\smce.xml
-Write-Host "$env:ComputerName:[INFO] Sysmon installed and configured" -Foregroundcolor Green 6>&1
+if ($Env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
+    & "C:\Windows\System32\Sysmon64.exe" -accepteula -i C:\Windows\System32\smce.xml
+}
+else {
+    & "C:\Windows\System32\Sysmon.exe" -accepteula -i C:\Windows\System32\smce.xml
+}
+Write-Host "$Env:ComputerName [INFO] Sysmon installed and configured" -Foregroundcolor Green 6>&1
 $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
