@@ -19,10 +19,6 @@ if (Get-Service -Name W3SVC) {
     $IIS = $true
     Import-Module WebAdministration
 }
-$Exchange = $false
-if (Get-Service -Name MSExchangeFastSearch) {
-    $Exchange = $true
-}
 
 ######### SMB #########
 # reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" /v SMB1 /t REG_DWORD /d 0 /f | Out-Null
