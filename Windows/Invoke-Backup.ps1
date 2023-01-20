@@ -3,6 +3,7 @@ $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSyst
 $Denied = @()
 $Sessions = @()
 $Ans = ""
+$Ans2 = ""
 mkdir $env:ProgramFiles\blue\windows\logs
 foreach ($Computer in $Computers) {
     $TestSession = New-PSSession -ComputerName $Computer
