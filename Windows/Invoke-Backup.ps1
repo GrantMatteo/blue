@@ -39,14 +39,23 @@ if ($Ans -eq "y" -or $Denied.Count -eq 0) {
         Write-Host "[INFO] Inventory done for $($Session.ComputerName)" -ForegroundColor Green
     }
 
-    Read-Host -Prompt "[INFO] Press any key to continue with hardening..."
-    foreach ($Session in $Sessions) {
-        $Hardening = Invoke-Command -FilePath $env:ProgramFiles\blue\windows\Invoke-SecureBaseline.ps1 -Session $Session -AsJob
-        Write-Host "[INFO] Hardening Script invoked on $($Session.ComputerName)" -ForegroundColor Green
-        Wait-Job $Hardening
-        $r = Receive-Job $Hardening
-        $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).baseline
-        Write-Host "[INFO] hardening done for $($Session.ComputerName)" -ForegroundColor Green
+    $Ans2 = Read-Host -Prompt "[INFO] Start hardening? [y/n]"
+    while ($Ans2 -ne "y" -and $Ans2 -ne "n") {
+        $Ans2 = Read-Host -Prompt "[INFO] Start hardening? [y/n]"
+    }
+    if ($Ans2 -eq "y") {
+        foreach ($Session in $Sessions) {
+            $Hardening = Invoke-Command -FilePath $env:ProgramFiles\blue\windows\Invoke-SecureBaseline.ps1 -Session $Session -AsJob
+            Write-Host "[INFO] Hardening Script invoked on $($Session.ComputerName)" -ForegroundColor Green
+            Wait-Job $Hardening
+            $r = Receive-Job $Hardening
+            $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).baseline
+            Write-Host "[INFO] hardening done for $($Session.ComputerName)" -ForegroundColor Green
+        }  
+    }
+    else {
+        Write-Host "[INFO] Exiting..." -ForegroundColor Yellow
+        exit
     }
 }
 Get-PSSession | Remove-PSSession
