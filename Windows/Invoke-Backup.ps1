@@ -2,6 +2,7 @@ $ErrorActionPreference = "SilentlyContinue" # COMMENT IF U WANT TO SEE ERRORS
 $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty DNSHostname
 $Denied = @()
 $Sessions = @()
+$Ans = ""
 foreach ($Computer in $Computers) {
     $TestSession = New-PSSession -ComputerName $Computer
     if ($TestSession) {
@@ -15,10 +16,13 @@ foreach ($Computer in $Computers) {
 }
 
 if ($Denied.Count -gt 0) {
-    $Ans = Read-Host -Prompt "Not All computers have WinRM enabled, are you sure you want to continue? [y/n]"
+    $Ans = Read-Host -Prompt "SOME COMPUTERS UNAVAILABLE, are you sure you want to continue? [y/n]"
     while ($Ans -ne "y" -and $Ans -ne "n") {
-        $Ans = Read-Host -Prompt "Not All computers have WinRM enabled, are you sure you want to continue? [y/n]"
+        $Ans = Read-Host -Prompt "SOME COMPUTERS UNAVAILABLE, are you sure you want to continue? [y/n]"
     }
+} 
+else {
+    Write-Host Write-Host "[INFO] Locked and loaded, fire away" -ForegroundColor Green
 }
 if ($Ans -eq "n") {
     Write-Host "[INFO] Exiting..." -ForegroundColor Yellow

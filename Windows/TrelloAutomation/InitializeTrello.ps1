@@ -14,6 +14,8 @@ $Sysmon = "C:\Windows\System32\Sysmon.exe"
 $Procexp = "C:\Windows\System32\procexp.exe"
 $Autoruns = "C:\Windows\System32\Autoruns.exe"
 $SysmonConfig = "C:\Windows\System32\smce.xml"
+$FirewallIn = "$env:ProgramFiles\blue\Windows\Firewall\FirewallInboundTemplate.ps1"
+$FirewallOut = "$env:ProgramFiles\blue\Windows\Firewall\FirewallOutboundTemplate.ps1"
 
 #$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select -expand hostname
 $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty DNSHostname
@@ -26,7 +28,8 @@ foreach ($Computer in $Computers) {
         Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession $Session -Recurse -Force
         Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession $Session -Recurse -Force
         Copy-Item -Path $SysmonConfig -Destination "C:\Windows\System32\smce.xml" -toSession $Session -Recurse -Force
-        # TODO: Copy firewall over too
+        Copy-Item -Path $FirewallIn -Destination "C:\Windows\System32\FirewallInboundTemplate.ps1" -toSession $Session -Recurse -Force
+        Copy-Item -Path $FirewallOut -Destination "C:\Windows\System32\FirewallOutboundTemplate.ps1" -toSession $Session -Recurse -Force
     }
     catch {
         $Denied += $Computer
