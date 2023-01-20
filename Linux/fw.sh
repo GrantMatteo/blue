@@ -10,6 +10,11 @@
 # My poor fingers can't handle typing four more letters per line
 ipt="/sbin/iptables"
 
+if [ -z "$PORTS" ] || [ -z "$LOCALPORTS" ] || [ -z "$LOCALNETWORK" ] || [ -z "$OUTBOUNDPORTS" ]; then
+    echo "One or more variables are empty. Exiting to prevent lockout."
+    exit 1
+fi
+
 # Flush the current rules
 $ipt -P INPUT ACCEPT ; $ipt -P OUTPUT ACCEPT ; $ipt -P FORWARD ACCEPT ; $ipt -F; $ipt -X
 
