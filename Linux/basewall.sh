@@ -6,6 +6,11 @@ ipt="/sbin/iptables"
 
 #LOCALNETWORK = Subnet(s) of machines that depend on us and vice versa
 
+if [ -z "$LOCALNETWORK" ]; then
+    echo "One or more variables are empty. Exiting to prevent lockout."
+    exit 1
+fi
+
 # Flush the current rules
 $ipt -P OUTPUT ACCEPT ; $ipt -P FORWARD ACCEPT ; $ipt -F; $ipt -X ;$ipt -P INPUT ACCEPT 
 
