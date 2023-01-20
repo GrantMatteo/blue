@@ -356,5 +356,5 @@ Write-Host "$env:ComputerName:[INFO] Powershell Logging enabled" -Foregroundcolo
 
 ######### Sysmon Setup #########
 & "C:\Windows\System32\Sysmon.exe" -accepteula -i C:\Windows\System32\smce.xml
-Write-Host "$env:ComputerName: Sysmon installed and configured" -Foregroundcolor Green 6>&1
+Write-Host "$env:ComputerName:[INFO] Sysmon installed and configured" -Foregroundcolor Green 6>&1
 $Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
