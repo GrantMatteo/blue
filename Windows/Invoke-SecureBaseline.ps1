@@ -186,6 +186,7 @@ Foreach ($ConfigFile in $ConfigFiles) {
 }
 Write-Host "$Env:ComputerName [INFO] PHP functions disabled" -Foregroundcolor Green 6>&1
 ######### Local Policies #########
+auditpol /set /category:* /success:enable /failure:enable | Out-Null
 Write-Output Y | Secedit /configure /db secedit.sdb /cfg "C:\Windows\System32\stigs.inf" /overwrite
 Write-Host "$Env:ComputerName [INFO] Local Policies configured" -Foregroundcolor Green 6>&1
 ######### Service Lockdown #########
