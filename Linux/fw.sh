@@ -22,14 +22,13 @@ $ipt -A INPUT -p tcp -m multiport --dport 22,$PORTS -m conntrack --ctstate NEW -
 
 # Allow incoming connections to dependencies we host for other machines + incoming local network DNS
 $ipt -A INPUT -p tcp -m multiport --dports $LOCALPORTS -s 127.0.0.1,$LOCALNETWORK -m conntrack --ctstate NEW -j ACCEPT
-$ipt -A INPUT -p udp --dport 53 -s 127.0.0.1,$LOCALNETWORK -j ACCEPT
 
 # Allow outbound connetions to dependencies we need from other machines + outbound local network DNS
 $ipt -A OUTPUT -p tcp -m multiport --dports $OUTBOUNDPORTS -d 127.0.0.1,$LOCALNETWORK -m conntrack --ctstate NEW -j ACCEPT
 
 # DNS and syslog
-$ipt -A INPUT -p udp -m multiport --dports 53,513 -s 127.0.0.1,$LOCALNETWORK -j ACCEPT
-$ipt -A OUTPUT -p udp -m multiport --dports 53,513 -s 127.0.0.1,$LOCALNETWORK -j ACCEPT
+$ipt -A INPUT -p udp -m multiport --dports 53,514 -s 127.0.0.1,$LOCALNETWORK -j ACCEPT
+$ipt -A OUTPUT -p udp -m multiport --dports 53,514 -s 127.0.0.1,$LOCALNETWORK -j ACCEPT
 
 # Finally, the danger line: drop any traffic that doesn't match. Forward for docker
 $ipt -P FORWARD ACCEPT; $ipt -P OUTPUT DROP; $ipt -P INPUT DROP
