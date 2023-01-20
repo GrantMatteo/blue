@@ -46,7 +46,7 @@ while ($p -match '[,;:|iIlLoO0]') {
 
 if ($DC) {
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "krbtgt" -and $_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
-    Write-Host "$env:COMPUTERNAME: [INFO] deaters:$p2" -ForegroundColor Magenta -BackgroundColor Black 6>&1
+    Write-Host "$env:COMPUTERNAME: [INFO] deaters:$p" -ForegroundColor Magenta -BackgroundColor Black 6>&1
     $ADUsers = Get-ADUser -Filter *
     $ADUsers | Set-ADUser -AllowReversiblePasswordEncryption 0 -PasswordNotRequired 0
     # Get-ADGroupMember -Identity "Administrators" | Where-Object {$_.name -ne "Domain Admins" -and $_.name -ne "Enterprise Admins" -and $_.SamAccountName -ne "deaters"} | ForEach-Object {Remove-ADGroupMember -Identity "Administrators" -Members $_.SamAccountName -confirm:$false}
@@ -61,7 +61,7 @@ else {
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "deaters"} | ForEach-Object {net user $_.name $p > $null}
     net user deaters $p2 /add | Out-Null
     net localgroup Administrators deaters /add | Out-Null
-    Write-Host "$env:COMPUTERNAME: [INFO] deaters:$p2" -ForegroundColor Magenta -BackgroundColor Black 6>&1
+    Write-Host "$env:COMPUTERNAME: [INFO] admin:$p2" -ForegroundColor Magenta -BackgroundColor Black 6>&1
     Write-Host "$env:COMPUTERNAME: [INFO] All:$p" -ForegroundColor Magenta -BackgroundColor Black 6>&1
 }
 
@@ -136,29 +136,30 @@ try {
     # Block persistence through WMI event subscription
     Add-MpPreference -AttackSurfaceReductionRules_Ids E6DB77E5-3DF2-4CF1-B95A-636979351E5B -AttackSurfaceReductionRules_Actions Enabled | Out-Null
     Write-Host "$env:ComputerName: Defender Attack Surface Reduction rules enabled" -Foregroundcolor Green 6>&1
-    ForEach ($ExcludedExt in (Get-MpPreference).ExclusionExtension) {
-        Remove-MpPreference -ExclusionExtension $ExcludedExt | Out-Null
-    }
-    ForEach ($ExcludedIp in (Get-MpPreference).ExclusionIpAddress) {
-        Remove-MpPreference -ExclusionIpAddress $ExcludedIp | Out-Null
-    }
-    ForEach ($ExcludedDir in (Get-MpPreference).ExclusionPath) {
-        Remove-MpPreference -ExclusionPath $ExcludedDir | Out-Null
-    }
-    ForEach ($ExcludedProc in (Get-MpPreference).ExclusionProcess) {
-        Remove-MpPreference -ExclusionProcess $ExcludedProc | Out-Null
-    }
     ForEach ($ExcludedASR in (Get-MpPreference).AttackSurfaceReductionOnlyExclusions) {
         Remove-MpPreference -AttackSurfaceReductionOnlyExclusions $ExcludedASR | Out-Null
     }
-    Write-Host "$env:ComputerName: Defender exclusions removed" -Foregroundcolor Green 6>&1
 }
 catch [System.Management.Automation.CommandNotFoundException] {
     Write-Host "$env:ComputerName: [INFO] Old defender version detected, skipping ASR rules" -Foregroundcolor Yellow 6>&1
 }
 catch {
-    Write-Host "$env:ComputerName: [ERROR] man wtf goin on over here with defender ASR" -ForegroundColor Red 6>&1
+    Write-Host "$env:ComputerName: [INFO] Old defender version detected, skipping ASR rules" -ForegroundColor Red 6>&1
 }
+ForEach ($ExcludedExt in (Get-MpPreference).ExclusionExtension) {
+    Remove-MpPreference -ExclusionExtension $ExcludedExt | Out-Null
+}
+ForEach ($ExcludedIp in (Get-MpPreference).ExclusionIpAddress) {
+    Remove-MpPreference -ExclusionIpAddress $ExcludedIp | Out-Null
+}
+ForEach ($ExcludedDir in (Get-MpPreference).ExclusionPath) {
+    Remove-MpPreference -ExclusionPath $ExcludedDir | Out-Null
+}
+ForEach ($ExcludedProc in (Get-MpPreference).ExclusionProcess) {
+    Remove-MpPreference -ExclusionProcess $ExcludedProc | Out-Null
+}
+Write-Host "$env:ComputerName: [INFO] Defender exclusions removed" -Foregroundcolor Green 6>&1
+
 ######### Disable PHP Functions #########
 $php = Get-ChildItem C:\ php.exe -recurse -ErrorAction SilentlyContinue | ForEach-Object {& $_.FullName --ini | Out-String}
 $ConfigFiles = @()
