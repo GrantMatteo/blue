@@ -1,4 +1,4 @@
-//doc cover
+****************************** COVER PAGE ******************************
 function createDoc() {
 
   var doc = DocumentApp.create('Business Inject');
@@ -66,7 +66,7 @@ function resetFooter() {
   console.log('URL: ' + docUrl);
 }
 
-//doc body
+****************************** HEADER SETUP ******************************
 function createBody() {
 
   DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
