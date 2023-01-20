@@ -37,14 +37,16 @@ if ($Ans -eq "y" -or $Denied.Count -eq 0) {
         $r = Receive-Job $Inventory
         $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).inventory
         Write-Host "[INFO] Inventory done for $($Session.ComputerName)" -ForegroundColor Green
-    
+    }
 
+    Read-Host -Prompt "[INFO] Press any key to continue with hardening..."
+    foreach ($Session in $Sessions) {
         $Hardening = Invoke-Command -FilePath $env:ProgramFiles\blue\windows\Invoke-SecureBaseline.ps1 -Session $Session -AsJob
         Write-Host "[INFO] Hardening Script invoked on $($Session.ComputerName)" -ForegroundColor Green
         Wait-Job $Hardening
         $r = Receive-Job $Hardening
         $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).baseline
         Write-Host "[INFO] hardening done for $($Session.ComputerName)" -ForegroundColor Green
-    } 
+    }
 }
 Get-PSSession | Remove-PSSession
