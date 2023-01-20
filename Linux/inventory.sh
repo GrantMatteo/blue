@@ -19,19 +19,11 @@ IS_DEBIAN=false
 IS_ALPINE=false
 IS_OTHER=false
 if command -v yum >/dev/null ; then
-    yum check-update -y >/dev/null
-    yum install net-tools iproute sed -y > /dev/null
     IS_RHEL=true
 elif command -v apt-get >/dev/null ; then
-    apt-get -qq update >/dev/null
-    apt-get -qq install net-tools iproute2 sed -y
     IS_DEBIAN=true
 elif command -v apk >/dev/null ; then
-    apk update >/dev/null
-    apk add iproute2 net-tools >/dev/null
     IS_ALPINE=true
-else
-    printf "Unknown package manager, install netstat/ip/ifconfig/sed manually if necessary\n"
 fi
 
 printf "\n${GREEN}#############HOST INFORMATION############${NC}\n"
