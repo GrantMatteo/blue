@@ -67,37 +67,35 @@ function resetFooter() {
 }
 
 ****************************** HEADER SETUP ******************************
-function createBody() {
+function createHeader() {
 
-  DocumentApp.openByUrl("insert here");
-  var doc = DocumentApp.openByUrl("insert here");
-  var body = doc.getBody();
+  DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
+  var doc = DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
   var header = doc.getHeader();
-  var footer = doc.getFooter();
 
   function setHeaderMargins() {
-  var doc = DocumentApp.getActiveDocument();
-
   header.setMarginTop(0);
   header.setMarginBottom(0);
   }
 
-  function setFooterMargins() {
-  var doc = DocumentApp.getActiveDocument();
-
-  footer.setMarginTop(0);
-  footer.setMarginBottom(0);
-  }
-
   header.editAsText().setFontSize(0);
 
-  var headerTable = [["LOGO", " ","Team XX"], ["Re: INSERT"," "," "]]
+  var headerTable = [
+    ["LOGO", " ","Team XX"],
+    ["Re: INSERT"," "," "]
+  ]
   var table = header.appendTable(headerTable);
 
   table.setBorderWidth(0);
   table.setColumnWidth(0, 221.256);
   table.setColumnWidth(1, 257.256);
   table.setColumnWidth(2, 133.488);
+
+  var styles = {};
+  styles[DocumentApp.Attribute.PADDING_TOP] = 5;
+  styles[DocumentApp.Attribute.PADDING_LEFT] = 5;
+  styles[DocumentApp.Attribute.PADDING_RIGHT] = 5;
+  styles[DocumentApp.Attribute.PADDING_BOTTOM] = 5;
 
   table.getRow(0).setMinimumHeight(100);
   table.getRow(0).editAsText().setFontSize(11);
@@ -122,4 +120,47 @@ function createBody() {
   table.getRow(1).getCell(0).setAttributes(rowTwoColor)
   table.getRow(1).getCell(1).setAttributes(rowTwoColor)  
   table.getRow(1).getCell(2).setAttributes(rowTwoColor)
+
+  //VERTICAL CELL ALIGNMENT: (TEAM) -> LEFT; (RE) -> BOTTOM, FIX INDENTS
 }
+
+****************************** FOOTER SETUP ******************************
+function createFooter(){
+
+  DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
+  var doc = DocumentApp.openByUrl("https://docs.google.com/open?id=1fOFysKOve-z46VRU4OtTfnFs6EAXTpcYSB1CFYQ160U");
+  var footer = doc.getFooter();
+
+  function setFooterMargins() {
+  footer.setMarginTop(0);
+  footer.setMarginBottom(0);
+  }
+
+  footer.editAsText().setFontSize(0);
+  
+  var footerTable = [
+    ["Email:"],
+    ["This document can contain data that is proprietary to the company and cannot be transferred. Only authorized employees can view information transmitted in this document. If you received this document in error please delete it from your systems immediately."],
+    [" "]
+  ]
+  var footTable = footer.appendTable(footerTable);
+
+  footTable.setBorderWidth(0);
+  footTable.setColumnWidth(0, 611.28);
+
+  //row 1
+  footTable.getRow(0).setMinimumHeight(37.656);
+  footTable.getRow(0).editAsText().setFontSize(12);
+  footTable.getRow(0).editAsText().setFontFamily("Calibri");
+  footTable.getRow(0).editAsText().setBold(true);
+  footTable.getRow(0).setForegroundColor('#000000');
+
+  var footOneColor = {};
+  footOneColor[DocumentApp.Attribute.BACKGROUND_COLOR] = '#d9d9d9';
+  footTable.getRow(0).getCell(0).setAttributes(footOneColor)
+
+  //row 2
+  footTable.getRow(1).setMinimumHeight(37.656);
+  footTable.getRow(2).setMinimumHeight(37.656);
+}
+
