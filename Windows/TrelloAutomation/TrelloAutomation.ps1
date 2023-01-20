@@ -92,8 +92,8 @@ if ($DC) {
         $Users = Get-ADGroupMember -Identity $_ | Select-Object -ExpandProperty Name
         if ($Users.Count -gt 0) {
             $Users = $Users | Out-String
-            Write-Host "Group: $_"
-            Write-Host "$Users"
+            Write-Host "Group: $_" 6>&1
+            Write-Host "$Users" 6>&1
             
         }
     }
@@ -108,8 +108,8 @@ if ($DC) {
         $Users = net localgroup $_ | Where-Object {$_ -AND $_ -notmatch "command completed successfully"} | Select-Object -skip 4
         if ($Users.Count -gt 0) {
             $Users = $Users | Out-String
-            Write-Host "Group: $_"
-            Write-Host "$Users"
+            Write-Host "Group: $_" 6>&1
+            Write-Host "$Users" 6>&1
         }
     }
     Write-Host "#### ALL Users ####" -Foregroundcolor Cyan 6>&1
