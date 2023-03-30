@@ -8,7 +8,7 @@
 #OUTBOUNDPORTS = The ports that our services depend on from other machines
 
 # My poor fingers can't handle typing four more letters per line
-ipt="/sbin/iptables"
+ipt=$(command -v iptables || command -v /sbin/iptables || command -v /usr/sbin/iptables)
 
 if [ -z "$PORTS" ] || [ -z "$LOCALPORTS" ] || [ -z "$LOCALNETWORK" ] || [ -z "$OUTBOUNDPORTS" ]; then
     echo "One or more variables are empty. Exiting to prevent lockout."

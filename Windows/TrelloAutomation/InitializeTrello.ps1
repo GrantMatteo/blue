@@ -1,75 +1,50 @@
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-Install-Module PowerTrello -Confirm:$false -Force
-$TrelloAPI = Read-Host -Prompt "Trello API Key (https://trello.com/app-key)"
-$TrelloAccessToken = Read-Host -Prompt "Trello Access Token"
+$ErrorActionPreference = "Continue"
 
+$Stigs = "$env:ProgramFiles\blue-main\Windows\bins\stigs.inf"
+$Sysmon64 = "$env:ProgramFiles\blue-main\Windows\bins\Sysmon64.exe"
+$Sysmon = "$env:ProgramFiles\blue-main\Windows\bins\Sysmon.exe"
+$Procexp = "$env:ProgramFiles\blue-main\Windows\bins\procexp.exe"
+$Autoruns = "$env:ProgramFiles\blue-main\Windows\bins\Autoruns.exe"
+$SysmonConfig = "$env:ProgramFiles\blue-main\Windows\bins\smce.xml"
+$SleepBeacon = "$env:ProgramFiles\blue-main\Windows\bins\Hunt-Sleeping-Beacons.exe"
+$StopThread = "$env:ProgramFiles\blue-main\Windows\bins\Stop-Thread.ps1"
+$FirewallIn = "$env:ProgramFiles\blue-main\Windows\bins\FirewallInboundTemplate.ps1"
+$FirewallOut = "$env:ProgramFiles\blue-main\Windows\bins\FirewallOutboundTemplate.ps1"
 
+Copy-Item -Path $Stigs -Destination "C:\Windows\System32\bins\stigs.inf" -Recurse -Force
+Copy-Item -Path $Sysmon64 -Destination "C:\Windows\System32\bins\Sysmon64.exe" -Recurse -Force
+Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\bins\Sysmon.exe" -Recurse -Force
+Copy-Item -Path $Procexp -Destination "C:\Windows\System32\bins\procexp.exe" -Recurse -Force
+Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\bins\Autoruns.exe" -Recurse -Force
+Copy-Item -Path $SysmonConfig -Destination "C:\Windows\System32\bins\smce.xml" -Recurse -Force
+Copy-Item -Path $SleepBeacon -Destination "C:\Windows\System32\bins\Hunt-Sleeping-Beacons.exe" -Recurse -Force
+Copy-Item -Path $StopThread -Destination "C:\Windows\System32\bins\Stop-Thread.ps1" -Recurse -Force
+Copy-Item -Path $FirewallIn -Destination "C:\Windows\System32\bins\FirewallInboundTemplate.ps1" -Recurse -Force
+Copy-Item -Path $FirewallOut -Destination "C:\Windows\System32\bins\FirewallOutboundTemplate.ps1" -Recurse -Force
 
-Invoke-WebRequest https://live.sysinternals.com/Sysmon64.exe -UseBasicParsing -OutFile C:\Windows\System32\Sysmon64.exe
-Invoke-WebRequest https://live.sysinternals.com/Sysmon.exe -UseBasicParsing -OutFile C:\Windows\System32\Sysmon.exe
-Invoke-WebRequest https://live.sysinternals.com/procexp.exe -UseBasicParsing -OutFile C:\Windows\System32\procexp.exe
-Invoke-WebRequest https://live.sysinternals.com/Autoruns.exe -UseBasicParsing -OutFile C:\Windows\System32\Autoruns.exe
-Invoke-WebRequest https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml -UseBasicParsing -OutFile C:\Windows\System32\smce.xml
-$Stigs = "$env:ProgramFiles\blue\blue-main\Windows\stigs.inf"
-$Sysmon64 = "C:\Windows\System32\Sysmon64.exe"
-$Sysmon = "C:\Windows\System32\Sysmon.exe"
-$Procexp = "C:\Windows\System32\procexp.exe"
-$Autoruns = "C:\Windows\System32\Autoruns.exe"
-$SysmonConfig = "C:\Windows\System32\smce.xml"
-$FirewallIn = "$env:ProgramFiles\blue\Windows\Firewall\FirewallInboundTemplate.ps1"
-$FirewallOut = "$env:ProgramFiles\blue\Windows\Firewall\FirewallOutboundTemplate.ps1"
-
-Get-ChildItem $env:ProgramFiles\blue\Windows -Recurse | Unblock-File
+Get-ChildItem $env:ProgramFiles\blue-main\Windows -Recurse | Unblock-File
 
 #$Hostname = [System.Net.Dns]::GetHostByName($env:computerName) | Select -expand hostname
-$Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty DNSHostname
-$Denied = @()
-$DC = [System.Net.Dns]::GetHostByName($env:computerName).Hostname
+$Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty Name
+$Localhost = hostname
 
 foreach ($Computer in $Computers) {
-    if (!($Computer -eq $DC)) {
-        $session = New-PSSession -ComputerName $Computer
-        if ($session) {
-            Write-Host "[INFO] Preparing to WinRM to: $Computer" -ForegroundColor Green
-            Copy-Item -Path $Stigs -Destination "C:\Windows\System32\stigs.inf" -toSession $Session -Recurse -Force
-            Copy-Item -Path $Sysmon64 -Destination "C:\Windows\System32\Sysmon64.exe" -toSession $Session -Recurse -Force
-            Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\Sysmon.exe" -toSession $Session -Recurse -Force
-            Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession $Session -Recurse -Force
-            Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession $Session -Recurse -Force
-            Copy-Item -Path $SysmonConfig -Destination "C:\Windows\System32\smce.xml" -toSession $Session -Recurse -Force
-            Copy-Item -Path $FirewallIn -Destination "C:\Windows\System32\FirewallInboundTemplate.ps1" -toSession $Session -Recurse -Force
-            Copy-Item -Path $FirewallOut -Destination "C:\Windows\System32\FirewallOutboundTemplate.ps1" -toSession $Session -Recurse -Force
-        }
-        else {
-            Write-Host "Damn" -ForegroundColor Red
-        }
+    if (!($Computer -eq $Localhost)) {
+        Write-Host "[INFO] Preparing to WinRM to: $Computer" -ForegroundColor Green
+        Robocopy.exe $env:ProgramFiles\blue-main\Windows\bins \\$Computer\ADMIN$\System32\bins
+        <#
+        Copy-Item -Path $Stigs -Destination "C:\Windows\System32\stigs.inf" -toSession $Session -Recurse -Force
+        Copy-Item -Path $Sysmon64 -Destination "C:\Windows\System32\Sysmon64.exe" -toSession $Session -Recurse -Force
+        Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\Sysmon.exe" -toSession $Session -Recurse -Force
+        Copy-Item -Path $Procexp -Destination "C:\Windows\System32\procexp.exe" -toSession $Session -Recurse -Force
+        Copy-Item -Path $Autoruns -Destination "C:\Windows\System32\Autoruns.exe" -toSession $Session -Recurse -Force
+        Copy-Item -Path $SysmonConfig -Destination "C:\Windows\System32\smce.xml" -toSession $Session -Recurse -Force
+        Copy-Item -Path $SleepBeacon -Destination "C:\Windows\System32\Hunt-Sleeping-Beacons.exe" -toSession $Session -Recurse -Force
+        Copy-Item -Path $FirewallIn -Destination "C:\Windows\System32\FirewallInboundTemplate.ps1" -toSession $Session -Recurse -Force
+        Copy-Item -Path $FirewallOut -Destination "C:\Windows\System32\FirewallOutboundTemplate.ps1" -toSession $Session -Recurse -Force
+        #>
+    }
+    else {
+        Write-Host "[ERROR] Failed to copy to $Computer" -ForegroundColor Red
     }
 }
-
-# $WinRMable = Compare-Object $Computers $Denied | Select-Object -ExpandProperty InputObject
-
-Set-TrelloConfiguration -AccessToken $TrelloAccessToken -ApiKey $TrelloAPI
-New-TrelloBoard -Name CCDC
-$BoardID = Get-TrelloBoard -Name CCDC | Select-Object -Expand id
-
-#Create Lists
-$IncomingTicketsList = New-TrelloList -BoardID $BoardID -Name 'Incoming Tickets' -Position 1 | Select-Object -expand id
-New-TrelloList -BoardID $BoardID -Name 'Resolved Tickets' -Position 2 | Select-Object -expand id
-New-TrelloList -BoardID $BoardID -Name 'Linux' -Position 3 | Select-Object -expand id
-$WindowsList = New-TrelloList -BoardID $BoardID -Name 'Windows' -Position 4 | Select-Object -expand id
-New-TrelloList -BoardID $BoardID -Name 'Networking' -Position 5 | Select-Object -expand id
-New-TrelloList -BoardID $BoardID -Name 'Business' -Position 6 | Select-Object -expand id
-
-#Create Cards for Incoming Tickets
-$BoxTemplateCard = New-TrelloCard -ListId $IncomingTicketsList -Name 'Box Template [DO NOT TOUCH]'
-$ManualWork = New-TrelloCard -ListId $WindowsList -Name "Rejected Windows Boxes"
-New-TrelloCardChecklist -Card $ManualWork -Name Hosts -Item $Denied
-New-TrelloCardChecklist -Card $BoxTemplateCard -Name Baselining -Item @('Inventory', 'Change Default Passwords', 'Configure Log Forwarding')
-
-#Invoke-Command $WinRMable -ScriptBlock {
-    #[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    #Install-Module PowerTrello -Scope AllUsers -Confirm:$false -Force
-    #Set-TrelloConfiguration -ApiKey $Using:TrelloAPI -AccessToken $Using:TrelloAccessToken
-    #New-HostCard -BoardID $Using:BoardID -System 'Windows' -User 'Tanay'
-#}
-#test

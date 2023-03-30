@@ -22,16 +22,35 @@
 
 if command -v yum >/dev/null ; then
     yum check-update -y >/dev/null
-    yum install net-tools iproute sed -y > /dev/null
+    yum install net-tools iproute sed curl wget bash -y > /dev/null
+    yum install iptraf -y >/dev/null
 
 elif command -v apt-get >/dev/null ; then
     apt-get -qq update >/dev/null
-    apt-get -qq install net-tools iproute2 sed -y
-
+    apt-get -qq install net-tools iproute2 sed curl wget bash -y >/dev/null
+    apt-get -qq install iptraf -y >/dev/null
 elif command -v apk >/dev/null ; then
+    echo "http://mirrors.ocf.berkeley.edu/alpine/v3.16/community" >> /etc/apk/repositories
     apk update >/dev/null
-    apk add iproute2 net-tools >/dev/null
+    apk add iproute2 net-tools curl wget bash >/dev/null
+    apk add iptraf-ng >/dev/null
 fi
+
+mkdir /root/.cache
+cp /etc/passwd /root/.cache/users
+
+( netstat -tlpn || ss -plnt ) > /root/.cache/listen
+( netstat -tpwn || ss -pnt | grep ESTAB ) > /root/.cache/estab
+
+mkdir /var/log/iptraf-ng/
+traf=$(command -v iptraf || command -v iptraf-ng)
+$traf -i all -B -L /var/log/iptraf-ng/bruh.log
+
+# just yolo the ones that work
+touch -t $(date -d "3 months ago" +%Y%m%d%H%M.%S) /root/.cache/ 2>/dev/null
+touch -t $(date -d "3 months ago" +%Y%m%d%H%M.%S) /root/.cache/listen 2>/dev/null
+touch -t $(date -d "3 months ago" +%Y%m%d%H%M.%S) /root/.cache/estab 2>/dev/null
+touch -t $(date -d "3 months ago" +%Y%m%d%H%M.%S) /root/.cache/users 2>/dev/null
 # Other PHP configs
 for ini in $(find /etc -name php.ini 2>/dev/null); do
     echo "expose_php = Off" >> $ini
@@ -51,9 +70,6 @@ for ini in $(find /etc -name php.ini 2>/dev/null); do
 	echo "session.use_only_cookies = 1" >> $ini
 	echo "session.cookie_secure = 1" >> $ini
 done 
-
-# Webshell?
-setfacl -m 'u:www-data:---' /bin/sh 2>/dev/null
 
 # profiles
 for f in '.profile' '.bashrc' '.bash_login'; do

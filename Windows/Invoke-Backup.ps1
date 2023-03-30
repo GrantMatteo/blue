@@ -1,10 +1,9 @@
-$ErrorActionPreference = "SilentlyContinue" # COMMENT IF U WANT TO SEE ERRORS
-$Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty DNSHostname
+$ErrorActionPreference = "Continue" # COMMENT IF U WANT TO SEE ERRORS
+$Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty Name
 $Denied = @()
 $Sessions = @()
-$Ans = ""
-$Ans2 = ""
-mkdir $env:ProgramFiles\blue\windows\logs
+$admin = Read-Host -Prompt "[PROMPT] Admin name: "
+mkdir $env:ProgramFiles\blue-main\windows\logs
 foreach ($Computer in $Computers) {
     $TestSession = New-PSSession -ComputerName $Computer
     if ($TestSession) {
@@ -32,11 +31,11 @@ if ($Ans -eq "n") {
 }
 if ($Ans -eq "y" -or $Denied.Count -eq 0) {
     foreach ($Session in $Sessions) {
-        $Inventory = Invoke-Command -FilePath $env:ProgramFiles\blue\windows\TrelloAutomation\TrelloAutomation.ps1 -Session $Session -AsJob
+        $Inventory = Invoke-Command -FilePath $env:ProgramFiles\blue-main\windows\TrelloAutomation\TrelloAutomation.ps1 -Session $Session -AsJob
         Write-Host "[INFO] Inventory Script invoked on $($Session.ComputerName)" -ForegroundColor Green
         Wait-Job $Inventory
         $r = Receive-Job $Inventory
-        $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).inventory
+        $r > $env:ProgramFiles\blue-main\windows\logs\$($Session.ComputerName).inventory
         Write-Host "[INFO] Inventory done for $($Session.ComputerName)" -ForegroundColor Green
     }
 
@@ -46,11 +45,11 @@ if ($Ans -eq "y" -or $Denied.Count -eq 0) {
     }
     if ($Ans2 -eq "y") {
         foreach ($Session in $Sessions) {
-            $Hardening = Invoke-Command -FilePath $env:ProgramFiles\blue\windows\Invoke-SecureBaseline.ps1 -Session $Session -AsJob
+            $Hardening = Invoke-Command -FilePath $env:ProgramFiles\blue-main\windows\Invoke-SecureBaseline.ps1 -ArgumentList "$admin" -Session $Session -AsJob
             Write-Host "[INFO] Hardening Script invoked on $($Session.ComputerName)" -ForegroundColor Green
             Wait-Job $Hardening
             $r = Receive-Job $Hardening
-            $r > $env:ProgramFiles\blue\windows\logs\$($Session.ComputerName).baseline
+            $r > $env:ProgramFiles\blue-main\windows\logs\$($Session.ComputerName).baseline
             Write-Host "[INFO] hardening done for $($Session.ComputerName)" -ForegroundColor Green
         }  
     }

@@ -1,4 +1,4 @@
-$ErrorActionPreference = "SilentlyContinue" # COMMENT IF U WANT TO SEE ERRORS
+$ErrorActionPreference = "Continue"
 $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty DNSHostname
 $Denied = @()
 foreach ($Computer in $Computers) {

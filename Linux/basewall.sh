@@ -2,7 +2,7 @@
 # Thank you Mr. DSU Fabriel Gawk for the gawk gawk 2000 like script that may or may not work
 
 # My poor fingers can't handle typing four more letters per line
-ipt="/sbin/iptables"
+ipt=$(command -v iptables || command -v /sbin/iptables || command -v /usr/sbin/iptables)
 
 #LOCALNETWORK = Subnet(s) of machines that depend on us and vice versa
 

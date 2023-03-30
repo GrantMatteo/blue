@@ -16,4 +16,5 @@ RUN curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/conf
 
 RUN adduser ccdc
 
+USER ccdc
 ENTRYPOINT [ "bash" ]
