@@ -36,7 +36,7 @@ fi
 
 grep -Prl 'general_log_file' /etc/ | xargs echo Enable SQL logging at
 
-cat << EOF > /etc/rsyslog.conf
+cat << EOF > /etc/rsyslog.d/69-remote.conf
 
 # Ubuntu Auth 
 \$ModLoad imfile 
