@@ -17,6 +17,7 @@ Write-Output "#########################"
 (Get-CimInstance -ClassName Win32_NetworkAdapterConfiguration -Filter "IPEnabled = 'True'") | % {$_.Description + "`n" + $_.Ipaddress + "`n"}
 
 ######### Logging#########
+auditpol /set /category:* /success:enable /failure:enable | Out-Null
 # Include command line in process creation events
 reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\Audit" /v "ProcessCreationIncludeCmdLine_Enabled" /t REG_DWORD /d 1 /f | Out-Null
 # Powershell command transcription
