@@ -1,6 +1,14 @@
 $Error.Clear()
 $ErrorActionPreference = "Continue"
 
+
+Write-Output "#########################"
+Write-Output "#                       #"
+Write-Output "#         Hard          #"
+Write-Output "#                       #"
+Write-Output "#########################"
+
+
 Write-Output "#########################"
 Write-Output "#    Hostname/Domain    #"
 Write-Output "#########################"

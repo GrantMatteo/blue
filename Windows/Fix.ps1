@@ -2,6 +2,13 @@ $Error.Clear()
 $ErrorActionPreference = "Continue"
 
 Write-Output "#########################"
+Write-Output "#                       #"
+Write-Output "#          Fix          #"
+Write-Output "#                       #"
+Write-Output "#########################"
+
+
+Write-Output "#########################"
 Write-Output "#    Hostname/Domain    #"
 Write-Output "#########################"
 Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object Name, Domain
