@@ -38,7 +38,7 @@ echo "
         </syscheck>
 
 </agent_config>
-" > /var/ossec/shared/windows/agent.conf
+" > /var/ossec/etc/shared/windows/agent.conf
 
 echo "
 <agent_config>
