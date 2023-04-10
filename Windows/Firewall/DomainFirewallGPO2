@@ -42,7 +42,9 @@ Sub ChangeHeaderFooterColor()
 	oStyle.RightMargin = 0
 	oStyle.FillBackground = True
 	oStyle.HeaderBackColor = RGB(16, 55, 93)
+	oStyle.HeaderHeight = 5000
 	oStyle.FooterBackColor = RGB(217,217,217)
+	oStyle.FooterHeight = 3000
 	oStyle.BackColor = RGB(255, 255, 255)
 
 End Sub
