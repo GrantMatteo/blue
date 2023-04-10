@@ -1,9 +1,22 @@
-$ErrorActionPreference = "Continue" # COMMENT IF U WANT TO SEE ERRORS
+param(
+    [Parameter(Mandatory=$true)]
+    [String]$Script,
+
+    [Parameter(Mandatory=$true)]
+    [String]$Out
+)
+
+
+
+$ErrorActionPreference = "Continue"
 $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty Name
 $Denied = @()
 $Sessions = @()
-$admin = Read-Host -Prompt "[PROMPT] Admin name: "
-mkdir $env:ProgramFiles\blue-main\windows\logs
+
+if ($Script -eq "$env:ProgramFiles\blue-main\windows\Users.ps1") {
+    $admin = Read-Host -Prompt "[PROMPT] Admin name: "
+}
+
 foreach ($Computer in $Computers) {
     $TestSession = New-PSSession -ComputerName $Computer
     if ($TestSession) {
@@ -31,31 +44,13 @@ if ($Ans -eq "n") {
 }
 if ($Ans -eq "y" -or $Denied.Count -eq 0) {
     foreach ($Session in $Sessions) {
-        $Inventory = Invoke-Command -FilePath $env:ProgramFiles\blue-main\windows\TrelloAutomation\TrelloAutomation.ps1 -Session $Session -AsJob
+        $ScriptJob = Invoke-Command -FilePath $Script -Session $Session -AsJob
         Write-Host "[INFO] Inventory Script invoked on $($Session.ComputerName)" -ForegroundColor Green
-        Wait-Job $Inventory
-        $r = Receive-Job $Inventory
-        $r > $env:ProgramFiles\blue-main\windows\logs\$($Session.ComputerName).inventory
-        Write-Host "[INFO] Inventory done for $($Session.ComputerName)" -ForegroundColor Green
-    }
-
-    $Ans2 = Read-Host -Prompt "[INFO] Start hardening? [y/n]"
-    while ($Ans2 -ne "y" -and $Ans2 -ne "n") {
-        $Ans2 = Read-Host -Prompt "[INFO] Start hardening? [y/n]"
-    }
-    if ($Ans2 -eq "y") {
-        foreach ($Session in $Sessions) {
-            $Hardening = Invoke-Command -FilePath $env:ProgramFiles\blue-main\windows\Invoke-SecureBaseline.ps1 -ArgumentList "$admin" -Session $Session -AsJob
-            Write-Host "[INFO] Hardening Script invoked on $($Session.ComputerName)" -ForegroundColor Green
-            Wait-Job $Hardening
-            $r = Receive-Job $Hardening
-            $r > $env:ProgramFiles\blue-main\windows\logs\$($Session.ComputerName).baseline
-            Write-Host "[INFO] hardening done for $($Session.ComputerName)" -ForegroundColor Green
-        }  
-    }
-    else {
-        Write-Host "[INFO] Exiting..." -ForegroundColor Yellow
-        exit
+        Wait-Job $ScriptJob
+        $r = Receive-Job $ScriptJob
+        #TODO test
+        $r > $Out\$($Session.ComputerName).inventory
+        Write-Host "[INFO] Script done for $($Session.ComputerName)" -ForegroundColor Green
     }
 }
 Get-PSSession | Remove-PSSession
