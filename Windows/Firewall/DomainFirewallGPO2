@@ -5,10 +5,6 @@ Sub ChangePageBackgroundColor()
     Dim pageStyle As String
     Dim oViewCursor	
     Dim oStyle
-    Dim oHeaderStyles As Object
-    Dim oFooterStyles As Object
-    Dim oHeader As Object
-    Dim oFooter As Object
     
     oViewCursor = ThisComponent.CurrentController.getViewCursor()
     pageStyle = oViewCursor.PageStyleName
