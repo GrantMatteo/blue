@@ -16,7 +16,7 @@ Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object 
 Write-Output "#########################"
 Write-Output "#          IP           #"
 Write-Output "#########################"
-(Get-CimInstance -ClassName Win32_NetworkAdapterConfiguration -Filter "IPEnabled = 'True'") | % {$_.Description + "`n" + $_.Ipaddress + "`n"}
+Get-WmiObject Win32_NetworkAdapterConfiguration | ? {$_.IpAddress -ne $null} | % {$_.ServiceName + "`n" + $_.IPAddress + "`n"}
 
 $DC = $false
 if (Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'") {

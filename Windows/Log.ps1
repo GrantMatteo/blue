@@ -14,7 +14,7 @@ Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object 
 Write-Output "#########################"
 Write-Output "#          IP           #"
 Write-Output "#########################"
-(Get-CimInstance -ClassName Win32_NetworkAdapterConfiguration -Filter "IPEnabled = 'True'") | % {$_.Description + "`n" + $_.Ipaddress + "`n"}
+Get-WmiObject Win32_NetworkAdapterConfiguration | ? {$_.IpAddress -ne $null} | % {$_.ServiceName + "`n" + $_.IPAddress + "`n"}
 
 ######### Logging#########
 auditpol /set /category:* /success:enable /failure:enable | Out-Null
@@ -29,8 +29,14 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging"
 reg add "HKLM\Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging" /v EnableModuleLogging /t REG_DWORD /d 1 /f | Out-Null
 reg add "HKLM\Software\Policies\Microsoft\Windows\PowerShell\ModuleLogging\ModuleNames" /v "*" /t REG_SZ /d "*" /f | Out-Null
 Write-Output "$Env:ComputerName [INFO] Powershell Logging enabled"
-C:\Windows\System32\inetsrv\appcmd.exe set config /section:httpLogging /dontLog:False
-Write-Output "$Env:ComputerName [INFO] IIS Logging enabled"
+try {
+    C:\Windows\System32\inetsrv\appcmd.exe set config /section:httpLogging /dontLog:False
+    Write-Output "$Env:ComputerName [INFO] IIS Logging enabled"
+}
+catch {
+    Write-Output "$Env:ComputerName [ERROR] IIS Logging failed"
+}
+
 
 ######### Sysmon Setup #########
 if ($Env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
