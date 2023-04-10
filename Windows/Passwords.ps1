@@ -1,4 +1,5 @@
 <#
-@ Red team please follow me
+@ Red team please follow me 
+🍆
 https://twitter.com/Altoid0day
 #>
