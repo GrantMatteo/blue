@@ -73,8 +73,4 @@ echo "
 
 curl -so ~/wazuh_socfortress_rules.sh https://raw.githubusercontent.com/socfortress/Wazuh-Rules/main/wazuh_socfortress_rules.sh && bash ~/wazuh_socfortress_rules.sh
 
-curl -so /root/wazuh-agent.msi https://packages.wazuh.com/4.x/windows/wazuh-agent-4.4.0-1.msi 
-curl -so /root/wazuh-agent.deb https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.4.0-1_amd64.deb
-curl -so /root/wazuh-agent.rpm https://packages.wazuh.com/4.x/yum/wazuh-agent-4.4.0-1.x86_64.rpm
-
 systemctl restart wazuh-manager
