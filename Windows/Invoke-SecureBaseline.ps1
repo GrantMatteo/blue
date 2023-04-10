@@ -369,4 +369,4 @@ else {
     & "C:\Windows\System32\bins\Sysmon.exe" -accepteula -i C:\Windows\System32\bins\smce.xml
 }
 Write-Output "$Env:ComputerName [INFO] Sysmon installed and configured" 
-$Error | Out-File $HOME\Desktop\isb.txt -Append -Encoding utf8
+$Error | Out-File $env:USERPROFILE\Desktop\isb.txt -Append -Encoding utf8

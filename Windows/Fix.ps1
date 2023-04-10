@@ -1,5 +1,5 @@
 $Error.Clear()
-$ErrorActionPreference = "Continue"
+$ErrorActionPreference = "SilentlyContinue"
 
 Write-Output "#########################"
 Write-Output "#                       #"
@@ -62,4 +62,4 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v Hi
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /V HideFileExt /T REG_DWORD /D 0 /F | Out-Null
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v ShowSuperHidden /t REG_DWORD /d 1 /F | Out-Null
 
-$Error | Out-File $HOME\Desktop\fix.txt -Append -Encoding utf8
+$Error | Out-File $env:USERPROFILE\Desktop\fix.txt -Append -Encoding utf8
