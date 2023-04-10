@@ -1,7 +1,7 @@
 #!/bin/bash
 
 curl -sO https://packages.wazuh.com/4.4/wazuh-install.sh && bash ./wazuh-install.sh -a -i
-/usr/share/wazuh-indexer/plugins/opensearch-security/tools/wazuh-passwords-tool.sh  -u admin -p 'CyperBatriot1?'
+/usr/share/wazuh-indexer/plugins/opensearch-security/tools/wazuh-passwords-tool.sh  -u admin -p ''
 
 mkdir /var/ossec/etc/shared/{windows,linux}
 cp -r /var/ossec/etc/shared/default/*.txt /var/ossec/etc/shared/windows/ && cp -r /var/ossec/etc/shared/default/*.txt /var/ossec/etc/shared/linux/
