@@ -25,7 +25,7 @@ $ipt -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 
 # CCS ENDPOINT
 $ipt -A OUTPUT -d $CCHOST -j ACCEPT
-$ipt -A INPUT -d $CCHOST -j ACCEPT
+$ipt -A INPUT -s $CCHOST -j ACCEPT
 
 # Allow outbound connetions to dependencies we need from other machines + outbound local network DNS
 $ipt -A OUTPUT -d 127.0.0.1,$LOCALNETWORK -m conntrack --ctstate NEW -j ACCEPT
