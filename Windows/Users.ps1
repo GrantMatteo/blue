@@ -39,3 +39,5 @@ if (!$DC) {
     Write-Output "$Env:ComputerName [INFO] Admin account:$p2" 
     Write-Output "$Env:ComputerName [INFO] All:$p"
 }
+
+$Error | Out-File $HOME\Desktop\Users.txt -Append -Encoding utf8

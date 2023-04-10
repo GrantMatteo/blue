@@ -21,4 +21,6 @@ reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v Auto
 reg add "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoShareWks /t REG_DWORD /d 0 /f | Out-Null
 net share C$ /delete | Out-Null
 net share ADMIN$ /delete | Out-Null
-Write-Output "$Env:ComputerName SMB shares deleted and settings applied" 
+Write-Output "$Env:ComputerName SMB shares deleted and settings applied"
+
+$Error | Out-File $HOME\Desktop\SMB.txt -Append -Encoding utf8
