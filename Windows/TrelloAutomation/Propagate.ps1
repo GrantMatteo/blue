@@ -11,6 +11,10 @@ $StopThread = "$env:ProgramFiles\blue-main\Windows\bins\Stop-Thread.ps1"
 $FirewallIn = "$env:ProgramFiles\blue-main\Windows\bins\FirewallInboundTemplate.ps1"
 $FirewallOut = "$env:ProgramFiles\blue-main\Windows\bins\FirewallOutboundTemplate.ps1"
 
+Copy-Item -Path "$env:ProgramFiles\blue-main\Windows\bins\" -Destination "C:\Windows\System32\bins\" -Recurse -Force
+
+
+<#
 Copy-Item -Path $Stigs -Destination "C:\Windows\System32\bins\stigs.inf" -Recurse -Force
 Copy-Item -Path $Sysmon64 -Destination "C:\Windows\System32\bins\Sysmon64.exe" -Recurse -Force
 Copy-Item -Path $Sysmon -Destination "C:\Windows\System32\bins\Sysmon.exe" -Recurse -Force
@@ -21,6 +25,7 @@ Copy-Item -Path $SleepBeacon -Destination "C:\Windows\System32\bins\Hunt-Sleepin
 Copy-Item -Path $StopThread -Destination "C:\Windows\System32\bins\Stop-Thread.ps1" -Recurse -Force
 Copy-Item -Path $FirewallIn -Destination "C:\Windows\System32\bins\FirewallInboundTemplate.ps1" -Recurse -Force
 Copy-Item -Path $FirewallOut -Destination "C:\Windows\System32\bins\FirewallOutboundTemplate.ps1" -Recurse -Force
+#>
 
 Get-ChildItem $env:ProgramFiles\blue-main\Windows -Recurse | Unblock-File
 
