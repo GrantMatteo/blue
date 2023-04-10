@@ -17,10 +17,6 @@ if (!(Test-Path $Out)) {
     mkdir $Out
 }
 
-if ($Script -eq "Users.ps1") {
-    $admin = Read-Host -Prompt "[PROMPT] Admin name: "
-}
-
 foreach ($Computer in $Computers) {
     $TestSession = New-PSSession -ComputerName $Computer
     if ($TestSession) {
@@ -47,8 +43,11 @@ if ($Ans -eq "n") {
     exit
 }
 if ($Ans -eq "y" -or $Denied.Count -eq 0) {
+    if ($Script -match "Users.ps1") {
+        $admin = Read-Host -Prompt "[PROMPT] Admin name: "
+    }
     foreach ($Session in $Sessions) {
-        if ($Script -eq "Users.ps1") {
+        if ($Script -match "Users.ps1") {
             $ScriptJob = Invoke-Command -FilePath $ScriptPath -ArgumentList $admin -Session $Session -AsJob
         }
         else {
