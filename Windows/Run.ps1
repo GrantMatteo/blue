@@ -6,14 +6,18 @@ param(
     [String]$Out
 )
 
-
-
 $ErrorActionPreference = "Continue"
 $Computers = Get-ADComputer -filter * -Properties * | Where-Object OperatingSystem -Like "*Windows*" | Select-Object -ExpandProperty Name
 $Denied = @()
 $Sessions = @()
+$ScriptPath = "$env:ProgramFiles\blue-main\windows\$Script"
+$Extension = Get-Random -Maximum 1000
 
-if ($Script -eq "$env:ProgramFiles\blue-main\windows\Users.ps1") {
+if (!(Test-Path $Out)) {
+    mkdir $Out
+}
+
+if ($Script -eq "Users.ps1") {
     $admin = Read-Host -Prompt "[PROMPT] Admin name: "
 }
 
@@ -44,13 +48,18 @@ if ($Ans -eq "n") {
 }
 if ($Ans -eq "y" -or $Denied.Count -eq 0) {
     foreach ($Session in $Sessions) {
-        $ScriptJob = Invoke-Command -FilePath $Script -Session $Session -AsJob
-        Write-Host "[INFO] Inventory Script invoked on $($Session.ComputerName)" -ForegroundColor Green
+        if ($Script -eq "Users.ps1") {
+            $ScriptJob = Invoke-Command -FilePath $ScriptPath -ArgumentList $admin -Session $Session -AsJob
+        }
+        else {
+            $ScriptJob = Invoke-Command -FilePath $ScriptPath -Session $Session -AsJob
+        }
+        Write-Host "[INFO: $Script] Script invoked on $($Session.ComputerName)" -ForegroundColor Green
         Wait-Job $ScriptJob
         $r = Receive-Job $ScriptJob
         #TODO test
-        $r > $Out\$($Session.ComputerName).inventory
-        Write-Host "[INFO] Script done for $($Session.ComputerName)" -ForegroundColor Green
+        $r > "$Out\$($Session.ComputerName).$Extension"
+        Write-Host "[INFO: $Script] Script done for $($Session.ComputerName)" -ForegroundColor Green
     }
 }
 Get-PSSession | Remove-PSSession
