@@ -28,4 +28,4 @@ net share C$ /delete | Out-Null
 net share ADMIN$ /delete | Out-Null
 Write-Output "$Env:ComputerName SMB shares deleted and settings applied"
 
-$Error | Out-File $HOME\Desktop\SMB.txt -Append -Encoding utf8
+$Error | Out-File $env:USERPROFILE\Desktop\SMB.txt -Append -Encoding utf8

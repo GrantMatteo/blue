@@ -33,4 +33,4 @@ Foreach ($ConfigFile in $ConfigFiles) {
     Add-Content $ConfigFile $ConfigString_FileUploads
 }
 Write-Output "$Env:ComputerName [INFO] PHP functions disabled"
-$Error | Out-File $HOME\Desktop\php.txt -Append -Encoding utf8
+$Error | Out-File $env:USERPROFILE\Desktop\php.txt -Append -Encoding utf8

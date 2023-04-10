@@ -1,5 +1,5 @@
 $Error.Clear()
-$ErrorActionPreference = "Continue"
+$ErrorActionPreference = "SilentlyContinue"
 
 Write-Output "#########################"
 Write-Output "#                       #"
@@ -47,4 +47,4 @@ else {
 }
 Write-Output "$Env:ComputerName [INFO] Sysmon installed and configured"
 
-$Error | Out-File $HOME\Desktop\log.txt -Append -Encoding utf8
+$Error | Out-File $env:USERPROFILE\Desktop\log.txt -Append -Encoding utf8

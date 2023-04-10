@@ -164,4 +164,4 @@ Write-Output "$Env:ComputerName [INFO] UAC enabled"
 ######### Constrained Language Mode #########
 [System.Environment]::SetEnvironmentVariable('__PSLockDownPolicy','4','Machine')
 
-$Error | Out-File $HOME\Desktop\hard.txt -Append -Encoding utf8
+$Error | Out-File $env:USERPROFILE\Desktop\hard.txt -Append -Encoding utf8

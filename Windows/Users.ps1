@@ -45,4 +45,4 @@ if (!$DC) {
     Write-Output "$Env:ComputerName [INFO] All:$p"
 }
 
-$Error | Out-File $HOME\Desktop\Users.txt -Append -Encoding utf8
+$Error | Out-File $env:USERPROFILE\Desktop\Users.txt -Append -Encoding utf8
