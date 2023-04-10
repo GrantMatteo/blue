@@ -48,3 +48,21 @@ Sub ChangeHeaderFooterColor()
 	oStyle.BackColor = RGB(255, 255, 255)
 
 End Sub
+
+'-------------------------------- paragraph style --------------------------------
+sub ParagraphStyle
+
+	dim document   as object
+	dim dispatcher as object
+	
+	document   = ThisComponent.CurrentController.Frame
+	dispatcher = createUnoService("com.sun.star.frame.DispatchHelper")
+	
+	dim args1(0) as new com.sun.star.beans.PropertyValue
+	args1(0).Name = "Param"
+	args1(0).Value = "Default Paragraph Style"
+	
+	dispatcher.executeDispatch(document, ".uno:EditStyle", "", 0, args1())
+
+
+end sub
