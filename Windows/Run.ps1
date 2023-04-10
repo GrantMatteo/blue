@@ -60,5 +60,6 @@ if ($Ans -eq "y" -or $Denied.Count -eq 0) {
         $r > "$Out\$($Session.ComputerName).$Extension"
         Write-Host "[INFO: $Script] Script done for $($Session.ComputerName)" -ForegroundColor Green
     }
+    Write-Output "[INFO] Log Extention $Extension"
 }
 Get-PSSession | Remove-PSSession

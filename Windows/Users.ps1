@@ -31,15 +31,17 @@ Add-Type -AssemblyName System.Web
 $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
 while ($p -match '[,;:|iIlLoO0]') {
     $p = [System.Web.Security.Membership]::GeneratePassword(14,4)
-} 
+}
+$p = $p + "P1!"
 
 if (!$DC) {
     $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
     while ($p2 -match '[,;:|iIlLoO0]') {
         $p2 = [System.Web.Security.Membership]::GeneratePassword(14,4)
     }
+    $p2 = $p2 + "P1!"
     Get-WmiObject -class win32_useraccount | Where-object {$_.name -ne "$Admin"} | ForEach-Object {net user $_.name $p > $null}
-    net user $Admin $p2 /add | Out-Null
+    net user $Admin $p2 /add /y | Out-Null
     net localgroup Administrators $Admin /add | Out-Null
     Write-Output "$Env:ComputerName [INFO] Admin account:$p2" 
     Write-Output "$Env:ComputerName [INFO] All:$p"
