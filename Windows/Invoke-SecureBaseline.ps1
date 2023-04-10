@@ -9,7 +9,7 @@ Write-Output "#### Hostname ####"
 Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object Name, Domain
 
 Write-Output "#### IP ####" 
-Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress, InterfaceAlias | Where-Object IPAddress -NotLike '127.0.0.1'
+(Get-CimInstance -ClassName Win32_NetworkAdapterConfiguration -Filter "IPEnabled = 'True'") | % {$_.Description + "`n" + $_.Ipaddress + "`n"}
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
 $Error.Clear()
@@ -94,7 +94,7 @@ if (!$Pre2008OnPrem -and !$2008r2OnPrem) {
 # Disable storage of plaintext creds in WDigest
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" /v UseLogonCredential /t REG_DWORD /d 0 /f | Out-Null
 # Enable remote UAC for Local accounts
-reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f | Out-Null
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 0 /f | Out-Null
 # Enable LSASS Protection
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 1 /f | Out-Null
 # Enable LSASSS process auditing
@@ -153,9 +153,6 @@ try {
     ForEach ($ExcludedASR in (Get-MpPreference).AttackSurfaceReductionOnlyExclusions) {
         Remove-MpPreference -AttackSurfaceReductionOnlyExclusions $ExcludedASR | Out-Null
     }
-}
-catch [System.Management.Automation.CommandNotFoundException] {
-    Write-Output "$Env:ComputerName [INFO] Old defender version detected, skipping ASR rules" 
 }
 catch {
     Write-Output "$Env:ComputerName [INFO] Old defender version detected, skipping ASR rules" 

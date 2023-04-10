@@ -3,7 +3,7 @@ Write-Output "#### Hostname ####"
 Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object Name, Domain
 
 Write-Output "#### IP ####" 
-Get-NetIPAddress | Where-Object AddressFamily -eq 'IPv4' | Select-Object IPAddress, InterfaceAlias | Where-Object IPAddress -NotLike '127.0.0.1'
+(Get-CimInstance -ClassName Win32_NetworkAdapterConfiguration -Filter "IPEnabled = 'True'") | % {$_.Description + "`n" + $_.Ipaddress + "`n"}
 
 $DC = Get-WmiObject -Query "select * from Win32_OperatingSystem where ProductType='2'"
 if ($DC) {
